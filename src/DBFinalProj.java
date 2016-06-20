@@ -3,5 +3,9 @@
  * Project: DBFinalProject
  */
 public class DBFinalProj {
-    
+
+    public static void main(String[] args) {
+
+    }
+
 }
