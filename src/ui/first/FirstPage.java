@@ -4,22 +4,41 @@ import ui.component.PlaceHolder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:50 AM.
  * Project: DBFinalProject
  */
-
 public class FirstPage extends JFrame {
 
     private static final int FP_WIDTH = 350;
     private static final int FP_HEIGHT = 200;
 
+    private JTextField tf_username;
+    private JTextField tf_password;
+    private JButton b_logIn;
+
+    private FirstPageFetcher fetcher;
+
     public static void main(String[] args) {
-        new FirstPage();
+        FirstPageFetcher fetcher = new FirstPageFetcher() {
+            @Override
+            public void signUp(String username, String password) {
+                System.out.println("Sign up:\n\tUsername: " + username + "\n\tPassword: " + password);
+            }
+
+            @Override
+            public void logIn(String username, String password) {
+                System.out.println("Log in:\n\tUsername: " + username + "\n\tPassword: " + password);
+            }
+        };
+        new FirstPage(fetcher);
     }
 
-    public FirstPage() {
+    public FirstPage(FirstPageFetcher fetcher) {
+        this.fetcher = fetcher;
         init();
     }
 
@@ -28,7 +47,7 @@ public class FirstPage extends JFrame {
         setSize(FP_WIDTH, FP_HEIGHT);
         setLocation((int) (ss.getWidth() - FP_WIDTH) / 2, (int) (ss.getHeight() - FP_HEIGHT) / 2);
         setResizable(false);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         setLayout(new GridBagLayout());
 
@@ -55,20 +74,43 @@ public class FirstPage extends JFrame {
         gbc.gridy = 1;
         gbc.gridwidth = 2;
         gbc.weightx = 0.6;
-        getContentPane().add(new TextField(), gbc);
+        tf_username = new JTextField();
+        tf_username.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getKeyChar() == '\n')
+                    b_logIn.doClick();
+            }
+        });
+        getContentPane().add(tf_username, gbc);
+        tf_username.requestFocusInWindow();
 
         gbc.gridy = 2;
-        getContentPane().add(new TextField(), gbc);
+        tf_password = new JTextField();
+        tf_password.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getKeyChar() == '\n')
+                    b_logIn.doClick();
+            }
+        });
+        getContentPane().add(tf_password, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
         gbc.weightx = 0.3;
         gbc.fill = GridBagConstraints.NONE;
-        getContentPane().add(new JButton("Sign up"), gbc);
+        JButton b_signUp = new JButton("Sign up");
+        b_signUp.addActionListener(e -> fetcher.signUp(tf_username.getText(), tf_password.getText()));
+        getContentPane().add(b_signUp, gbc);
 
         gbc.gridx = 3;
-        getContentPane().add(new JButton("Log in"), gbc);
+        b_logIn = new JButton("Log in");
+        b_logIn.addActionListener(e -> fetcher.logIn(tf_username.getText(), tf_password.getText()));
+        getContentPane().add(b_logIn, gbc);
 
         gbc.gridx = 4;
         gbc.gridy = 4;
@@ -78,6 +120,7 @@ public class FirstPage extends JFrame {
         getContentPane().add(new PlaceHolder(), gbc);
 
         setVisible(true);
+        tf_username.requestFocus();
     }
 
 }
