@@ -6,8 +6,8 @@ package ui.first;
  */
 public interface FirstPageFetcher {
 
-    void signUp(String username, String password);
+    boolean signUp(String username, String password);
 
-    void logIn(String username, String password);
+    boolean logIn(String username, String password);
 
 }

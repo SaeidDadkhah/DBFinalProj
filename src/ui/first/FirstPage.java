@@ -4,6 +4,8 @@ import ui.component.PlaceHolder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -25,14 +27,17 @@ public class FirstPage extends JFrame {
     public static void main(String[] args) {
         FirstPageFetcher fetcher = new FirstPageFetcher() {
             @Override
-            public void signUp(String username, String password) {
+            public boolean signUp(String username, String password) {
                 System.out.println("Sign up:\n\tUsername: " + username + "\n\tPassword: " + password);
+                return false;
             }
 
             @Override
-            public void logIn(String username, String password) {
+            public boolean logIn(String username, String password) {
                 System.out.println("Log in:\n\tUsername: " + username + "\n\tPassword: " + password);
+                return false;
             }
+
         };
         new FirstPage(fetcher);
     }
@@ -60,7 +65,7 @@ public class FirstPage extends JFrame {
         gbc.weightx = 0.1;
         gbc.weighty = 0.2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        getContentPane().add(new PlaceHolder(), gbc);
+        getContentPane().add(new PlaceHolder(this), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
@@ -104,12 +109,20 @@ public class FirstPage extends JFrame {
         gbc.weightx = 0.3;
         gbc.fill = GridBagConstraints.NONE;
         JButton b_signUp = new JButton("Sign up");
-        b_signUp.addActionListener(e -> fetcher.signUp(tf_username.getText(), tf_password.getText()));
+        b_signUp.addActionListener(e -> {
+            if (!fetcher.signUp(tf_username.getText(), tf_password.getText())) {
+                JOptionPane.showMessageDialog(null, "Username is already in use!", "Error", JOptionPane.WARNING_MESSAGE);
+            }
+        });
         getContentPane().add(b_signUp, gbc);
 
         gbc.gridx = 3;
         b_logIn = new JButton("Log in");
-        b_logIn.addActionListener(e -> fetcher.logIn(tf_username.getText(), tf_password.getText()));
+        b_logIn.addActionListener(e -> {
+            if (!fetcher.logIn(tf_username.getText(), tf_password.getText())) {
+                JOptionPane.showMessageDialog(null, "Username or password is not correct.!", "Error", JOptionPane.WARNING_MESSAGE);
+            }
+        });
         getContentPane().add(b_logIn, gbc);
 
         gbc.gridx = 4;
@@ -117,7 +130,7 @@ public class FirstPage extends JFrame {
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
         gbc.weightx = 0.1;
-        getContentPane().add(new PlaceHolder(), gbc);
+        getContentPane().add(new PlaceHolder(this), gbc);
 
         setVisible(true);
         tf_username.requestFocus();

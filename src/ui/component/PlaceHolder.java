@@ -9,8 +9,15 @@ import java.awt.*;
  */
 public class PlaceHolder extends JButton {
 
+    private JFrame parent;
+
+    public PlaceHolder(JFrame parent) {
+        this.parent = parent;
+    }
+
     @Override
     public void paint(Graphics g) {
-//        super.paint(g);
+        //super.paint(g);
+        parent.repaint();
     }
 }
