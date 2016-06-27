@@ -1,17 +1,17 @@
-package ui.first;
+package client.ui.first;
 
-import ui.component.PlaceHolder;
+import client.ui.component.PlaceHolder;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:50 AM.
- * Project: DBFinalProject
+ * Project: Server
  */
 public class FirstPage extends JFrame {
 
@@ -38,6 +38,10 @@ public class FirstPage extends JFrame {
                 return false;
             }
 
+            @Override
+            public void closing() {
+                System.out.println("closing!");
+            }
         };
         new FirstPage(fetcher);
     }
@@ -53,6 +57,14 @@ public class FirstPage extends JFrame {
         setLocation((int) (ss.getWidth() - FP_WIDTH) / 2, (int) (ss.getHeight() - FP_HEIGHT) / 2);
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                fetcher.closing();
+            }
+        });
 
         setLayout(new GridBagLayout());
 

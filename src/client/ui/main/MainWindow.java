@@ -1,4 +1,4 @@
-package ui.main;
+package client.ui.main;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -6,7 +6,7 @@ import java.awt.*;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:14 AM.
- * Project: DBFinalProject
+ * Project: Server
  */
 public class MainWindow extends JFrame {
 
