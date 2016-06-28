@@ -1,5 +1,7 @@
 package client.ui.main;
 
+import client.ui.component.Contacts;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
@@ -8,13 +10,13 @@ import java.awt.*;
  * Created by Saeid Dadkhah on 2016-06-20 6:14 AM.
  * Project: Server
  */
-public class MainWindow extends JFrame {
+public class MainPage extends JFrame {
 
     public static void main(String[] args) {
-        new MainWindow();
+        new MainPage();
     }
 
-    public MainWindow() {
+    public MainPage() {
         init();
     }
 

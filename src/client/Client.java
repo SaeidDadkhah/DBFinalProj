@@ -2,6 +2,7 @@ package client;
 
 import client.ui.first.FirstPage;
 import client.ui.first.FirstPageFetcher;
+import client.ui.main.MainPage;
 import common.Constants;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,6 +27,9 @@ public class Client implements FirstPageFetcher {
     private JSONParser parser;
 
     private FirstPage firstPage;
+    private MainPage mainPage;
+
+    private String currentUser;
 
     public static void main(String[] args) {
         new Client();
@@ -53,6 +57,7 @@ public class Client implements FirstPageFetcher {
         parser = new JSONParser();
 
         firstPage = new FirstPage(this);
+        currentUser = null;
     }
 
     @Override
@@ -90,10 +95,12 @@ public class Client implements FirstPageFetcher {
             dos.writeUTF(request.toJSONString());
 
             JSONObject response = (JSONObject) parser.parse(dis.readUTF());
-            if (Constants.RS_SUCCESSFUL_SIGNUP.equals(response.get(Constants.F_RESPONSE))) {
+            if (Constants.RS_SUCCESSFUL_LOGIN.equals(response.get(Constants.F_RESPONSE))) {
                 firstPage.dispose();
+                currentUser = username;
+                mainPage = new MainPage();
                 return true;
-            } else if (Constants.RS_UNSUCCESSFUL_SIGNUP.equals(response.get(Constants.F_RESPONSE)))
+            } else if (Constants.RS_UNSUCCESSFUL_LOGIN.equals(response.get(Constants.F_RESPONSE)))
                 return false;
             else
                 return false;

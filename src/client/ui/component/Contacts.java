@@ -1,4 +1,4 @@
-package client.ui.main;
+package client.ui.component;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

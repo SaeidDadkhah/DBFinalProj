@@ -123,7 +123,7 @@ public class Server implements Runnable {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
                             .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME))
-                            .append(Constants.F_PASSWORD, request.get(Constants.F_USERNAME)));
+                            .append(Constants.F_PASSWORD, request.get(Constants.F_PASSWORD)));
 
             if (res.first() != null) {
                 JSONObject response = new JSONObject();

@@ -122,8 +122,15 @@ public class FirstPage extends JFrame {
         gbc.fill = GridBagConstraints.NONE;
         JButton b_signUp = new JButton("Sign up");
         b_signUp.addActionListener(e -> {
-            if (!fetcher.signUp(tf_username.getText(), tf_password.getText())) {
-                JOptionPane.showMessageDialog(null, "Username is already in use!", "Error", JOptionPane.WARNING_MESSAGE);
+            if (fetcher.signUp(tf_username.getText(), tf_password.getText())) {
+                JOptionPane.showMessageDialog(null,
+                        "You have been registered successfully!",
+                        "Successful Register",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Username is already in use!",
+                        "Unsuccessful Register",
+                        JOptionPane.WARNING_MESSAGE);
             }
         });
         getContentPane().add(b_signUp, gbc);
