@@ -25,7 +25,6 @@ public class Server implements Runnable {
     private MongoDatabase db;
 
     private Socket socket;
-    private DataInputStream dis;
     private DataOutputStream dos;
 
     private JSONParser parser;
@@ -36,6 +35,7 @@ public class Server implements Runnable {
             ServerSocket serverSocket = new ServerSocket(Constants.SN_PORT);
             serverSocket.setSoTimeout(1000000);
 
+            //noinspection InfiniteLoopStatement
             while (true) {
                 System.out.println("Waiting...");
                 Socket socket = serverSocket.accept();
@@ -62,7 +62,7 @@ public class Server implements Runnable {
     @Override
     public void run() {
         try {
-            dis = new DataInputStream(socket.getInputStream());
+            DataInputStream dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
             String request;
             do {
