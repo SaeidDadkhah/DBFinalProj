@@ -17,20 +17,21 @@ public class Constants {
     public static final String C_USERS = "users";
 
     // RQ stands for Request
-    public static final int R_DISCONNECT = -1;
-    public static final int R_SIGNUP = 1;
-    public static final int R_LOGIN = 2;
+    public static final String RQ_DISCONNECT = "disconnect";
+    public static final String RQ_SIGNUP = "signup";
+    public static final String RQ_LOGIN = "login";
 
     // RS stands for Request
-    public static final int RS_SUCCESSFUL_SIGNUP = 1;
-    public static final int RS_UNSUCCESSFUL_SIGNUP = 2;
-    public static final int RS_SUCCESSFUL_LOGIN = 3;
-    public static final int RS_UNSUCCESSFUL_LOGIN = 4;
+    public static final String RS_SUCCESSFUL_SIGNUP = "successful signup";
+    public static final String RS_UNSUCCESSFUL_SIGNUP = "unsuccessful signup";
+    public static final String RS_SUCCESSFUL_LOGIN = "successful login";
+    public static final String RS_UNSUCCESSFUL_LOGIN = "unsuccessful login";
 
     // F stands for Field
+    public static final String F_REQUEST = "request";
+    public static final String F_RESPONSE = "response";
     public static final String F_USERNAME = "username";
     public static final String F_PASSWORD = "password";
-
 
 
 }

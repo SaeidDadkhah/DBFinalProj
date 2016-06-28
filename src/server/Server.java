@@ -5,6 +5,9 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import common.Constants;
 import org.bson.Document;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,6 +19,7 @@ import java.net.Socket;
  * Created by Saeid Dadkhah on 2016-06-20 6:11 AM.
  * Project: Server
  */
+@SuppressWarnings("unchecked")
 public class Server implements Runnable {
 
     private MongoDatabase db;
@@ -23,6 +27,9 @@ public class Server implements Runnable {
     private Socket socket;
     private DataInputStream dis;
     private DataOutputStream dos;
+
+    private JSONParser parser;
+    private JSONObject request;
 
     public static void main(String[] args) {
         try {
@@ -43,6 +50,8 @@ public class Server implements Runnable {
     public Server(Socket socket) {
         this.socket = socket;
 
+        parser = new JSONParser();
+
         MongoClient client = new MongoClient();
         db = client.getDatabase(Constants.DB_NAME);
 
@@ -55,90 +64,82 @@ public class Server implements Runnable {
         try {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
-            int requestNumber;
+            String request;
             do {
-                requestNumber = dis.readInt();
-                System.out.println("Request Number: " + requestNumber);
-                switch (requestNumber) {
-                    case Constants.R_SIGNUP:
+                this.request = (JSONObject) parser.parse(dis.readUTF());
+                request = (String) this.request.get(Constants.F_REQUEST);
+
+                System.out.println("Request: " + request);
+                switch (request) {
+                    case Constants.RQ_SIGNUP:
                         signUp();
                         break;
-                    case Constants.R_LOGIN:
+                    case Constants.RQ_LOGIN:
                         logIn();
                         break;
-                    case Constants.R_DISCONNECT:
+                    case Constants.RQ_DISCONNECT:
                         socket.close();
                         break;
                     default:
-                        System.err.println("Invalid request. Request number: " + requestNumber);
+                        System.err.println("Invalid request. Request: " + request);
                 }
-            } while (requestNumber != Constants.R_DISCONNECT);
+            } while (!Constants.RQ_DISCONNECT.equals(request));
             System.out.println("Disconnecting from: " + socket.getRemoteSocketAddress());
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
 
     public boolean signUp() {
-        String str = null;
         try {
-            str = dis.readUTF();
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
+                    .find(new Document()
+                            .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+            if (res.first() == null) {
+                db.getCollection(Constants.C_USERS).insertOne(new Document()
+                        .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME))
+                        .append(Constants.F_PASSWORD, request.get(Constants.F_PASSWORD)));
+
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_SIGNUP);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
+            } else {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_SIGNUP);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        assert str != null;
-        FindIterable<Document> res = db.getCollection(Constants.C_USERS)
-                .find(new Document()
-                        .append(Constants.F_USERNAME, str.split(" ")[0]));
-        if (res.first() == null) {
-            db.getCollection(Constants.C_USERS).insertOne(new Document()
-                    .append(Constants.F_USERNAME, str.split(" ")[0])
-                    .append(Constants.F_PASSWORD, str.split(" ")[1]));
-
-            try {
-                dos.writeInt(Constants.RS_SUCCESSFUL_SIGNUP);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return true;
-        } else {
-
-            try {
-                dos.writeInt(Constants.RS_UNSUCCESSFUL_SIGNUP);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             return false;
         }
     }
 
     public boolean logIn() {
-        String str = null;
         try {
-            str = dis.readUTF();
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
+                    .find(new Document()
+                            .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME))
+                            .append(Constants.F_PASSWORD, request.get(Constants.F_USERNAME)));
+
+            if (res.first() != null) {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_LOGIN);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
+            } else {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_LOGIN);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        assert str != null;
-        FindIterable<Document> res = db.getCollection(Constants.C_USERS)
-                .find(new Document()
-                        .append(Constants.F_USERNAME, str.split(" ")[0])
-                        .append(Constants.F_PASSWORD, str.split(" ")[1]));
-
-        if (res.first() != null) {
-            try {
-                dos.writeInt(Constants.RS_SUCCESSFUL_LOGIN);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return true;
-        } else {
-            try {
-                dos.writeInt(Constants.RS_UNSUCCESSFUL_LOGIN);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             return false;
         }
     }
