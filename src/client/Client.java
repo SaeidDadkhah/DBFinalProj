@@ -3,6 +3,7 @@ package client;
 import client.ui.first.FirstPage;
 import client.ui.first.FirstPageFetcher;
 import client.ui.main.MainPage;
+import client.ui.main.MainPageFetcher;
 import common.Constants;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,7 +20,7 @@ import java.net.Socket;
  * Project: DBFinalProject
  */
 @SuppressWarnings("unchecked")
-public class Client implements FirstPageFetcher {
+public class Client implements FirstPageFetcher, MainPageFetcher {
 
     private DataInputStream dis;
     private DataOutputStream dos;
@@ -98,7 +99,7 @@ public class Client implements FirstPageFetcher {
             if (Constants.RS_SUCCESSFUL_LOGIN.equals(response.get(Constants.F_RESPONSE))) {
                 firstPage.dispose();
                 currentUser = username;
-                mainPage = new MainPage();
+                mainPage = new MainPage(this);
                 return true;
             } else if (Constants.RS_UNSUCCESSFUL_LOGIN.equals(response.get(Constants.F_RESPONSE)))
                 return false;
@@ -122,6 +123,32 @@ public class Client implements FirstPageFetcher {
             dos.writeUTF(request.toJSONString());
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean deleteAccount(String password) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_DELETE_ACCOUNT);
+            request.put(Constants.F_USERNAME, currentUser);
+            request.put(Constants.F_PASSWORD, password);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_DELETE_ACCOUNT.equals(response.get(Constants.F_RESPONSE))) {
+                mainPage.dispose();
+                firstPage = new FirstPage(this);
+                return true;
+            } else if (Constants.RS_UNSUCCESSFUL_DELETE_ACCOUNT.equals(response.get(Constants.F_RESPONSE))) {
+                return false;
+            } else {
+                return false;
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

@@ -12,11 +12,21 @@ import java.awt.*;
  */
 public class MainPage extends JFrame {
 
+    private MainPageFetcher fetcher;
+
     public static void main(String[] args) {
-        new MainPage();
+        new MainPage(new MainPageFetcher() {
+
+            @Override
+            public boolean deleteAccount(String password) {
+                System.out.println("delete account:\n\tpassword: " + password);
+                return false;
+            }
+        });
     }
 
-    public MainPage() {
+    public MainPage(MainPageFetcher fetcher) {
+        this.fetcher = fetcher;
         init();
     }
 
@@ -39,6 +49,16 @@ public class MainPage extends JFrame {
 
         JMenuItem mi_search = new JMenuItem("Search");
         m_window.add(mi_search);
+
+        JMenuItem mi_deactive = new JMenuItem("Delete Account");
+        mi_deactive.addActionListener(e -> {
+            String password = JOptionPane.showInputDialog(null,
+                    "Please enter your password to verify delete account.",
+                    "Password",
+                    JOptionPane.QUESTION_MESSAGE);
+            fetcher.deleteAccount(password);
+        });
+        m_window.add(mi_deactive);
 
         m_window.addSeparator();
 

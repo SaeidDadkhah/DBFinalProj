@@ -20,10 +20,13 @@ public class Constants {
     public static final String RQ_DISCONNECT = "disconnect";
     public static final String RQ_SIGNUP = "signup";
     public static final String RQ_LOGIN = "login";
+    public static final String RQ_DELETE_ACCOUNT = "delete account";
 
     // RS stands for Request
     public static final String RS_SUCCESSFUL_SIGNUP = "successful signup";
     public static final String RS_UNSUCCESSFUL_SIGNUP = "unsuccessful signup";
+    public static final String RS_SUCCESSFUL_DELETE_ACCOUNT = "successful delete account";
+    public static final String RS_UNSUCCESSFUL_DELETE_ACCOUNT = "unsuccessful delete account";
     public static final String RS_SUCCESSFUL_LOGIN = "successful login";
     public static final String RS_UNSUCCESSFUL_LOGIN = "unsuccessful login";
 

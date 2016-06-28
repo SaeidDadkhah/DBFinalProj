@@ -19,7 +19,7 @@ public class FirstPage extends JFrame {
     private static final int FP_HEIGHT = 200;
 
     private JTextField tf_username;
-    private JTextField tf_password;
+    private JPasswordField tf_password;
     private JButton b_logIn;
 
     private FirstPageFetcher fetcher;
@@ -104,7 +104,7 @@ public class FirstPage extends JFrame {
         tf_username.requestFocusInWindow();
 
         gbc.gridy = 2;
-        tf_password = new JTextField();
+        tf_password = new JPasswordField();
         tf_password.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {

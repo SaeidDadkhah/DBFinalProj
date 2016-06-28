@@ -77,6 +77,9 @@ public class Server implements Runnable {
                     case Constants.RQ_LOGIN:
                         logIn();
                         break;
+                    case Constants.RQ_DELETE_ACCOUNT:
+                        deleteAccount();
+                        break;
                     case Constants.RQ_DISCONNECT:
                         socket.close();
                         break;
@@ -90,7 +93,7 @@ public class Server implements Runnable {
         }
     }
 
-    public boolean signUp() {
+    private boolean signUp() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
@@ -118,7 +121,7 @@ public class Server implements Runnable {
         }
     }
 
-    public boolean logIn() {
+    private boolean logIn() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
@@ -134,6 +137,33 @@ public class Server implements Runnable {
             } else {
                 JSONObject response = new JSONObject();
                 response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_LOGIN);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean deleteAccount() {
+        try {
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
+                    .find(new Document()
+                            .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+            if (res.first() != null) {
+                db.getCollection(Constants.C_USERS).deleteOne(new Document()
+                        .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_DELETE_ACCOUNT);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
+            } else {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_DELETE_ACCOUNT);
                 System.out.println(response.toJSONString());
                 dos.writeUTF(response.toJSONString());
                 return false;
