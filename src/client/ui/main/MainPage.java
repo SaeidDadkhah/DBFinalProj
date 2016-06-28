@@ -1,16 +1,25 @@
 package client.ui.main;
 
 import client.ui.component.Contacts;
+import org.json.simple.JSONObject;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Enumeration;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:14 AM.
  * Project: Server
  */
 public class MainPage extends JFrame {
+
+    private JTextArea ta_messages;
+    private JTextField tf_message;
+    private JButton b_send;
+    private Contacts contacts;
 
     private MainPageFetcher fetcher;
 
@@ -21,6 +30,12 @@ public class MainPage extends JFrame {
             public boolean deleteAccount(String password) {
                 System.out.println("delete account:\n\tpassword: " + password);
                 return false;
+            }
+
+            @Override
+            public boolean send(String receiver, String message) {
+                System.out.println("to: " + receiver + "\nmessage: " + message);
+                return true;
             }
         });
     }
@@ -102,18 +117,48 @@ public class MainPage extends JFrame {
 
         gbc.gridy = 1;
         gbc.weighty = 1;
-        getContentPane().add(new JTextArea(), gbc);
+        ta_messages = new JTextArea();
+        ta_messages.setEditable(false);
+        getContentPane().add(ta_messages, gbc);
 
         gbc.gridy = 2;
         gbc.gridwidth = 3;
         gbc.weighty = 0;
-        JTextField tf_message = new JTextField();
+        tf_message = new JTextField();
+        tf_message.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getKeyChar() == '\n')
+                    b_send.doClick();
+            }
+        });
         getContentPane().add(tf_message, gbc);
 
         gbc.gridx = 3;
         gbc.gridwidth = 1;
         gbc.weightx = 0;
-        getContentPane().add(new JButton("Send"), gbc);
+        b_send = new JButton("Send");
+        b_send.addActionListener(e -> {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getLastSelectedPathComponent();
+            if (tf_message.getText().length() > 0
+                    && node != null) {
+                if (node.isLeaf()) {
+                    if (fetcher.send(node.toString(), tf_message.getText())) {
+                        ta_messages.append("me: " + tf_message.getText() + "\n");
+                        tf_message.setText("");
+                    }
+                } else {
+                    Enumeration enumeration = node.depthFirstEnumeration();
+                    while (enumeration.hasMoreElements()) {
+                        node = (DefaultMutableTreeNode) enumeration.nextElement();
+                        if (node.isLeaf())
+                            fetcher.send(node.toString(), tf_message.getText());
+                    }
+                }
+            }
+        });
+        getContentPane().add(b_send, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
@@ -136,7 +181,7 @@ public class MainPage extends JFrame {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Chats");
         root.add(new DefaultMutableTreeNode("Friends"));
         root.add(new DefaultMutableTreeNode("Groups"));
-        Contacts contacts = new Contacts(root);
+        contacts = new Contacts(root);
         getContentPane().add(contacts, gbc);
 
         setVisible(true);

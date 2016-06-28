@@ -8,4 +8,6 @@ public interface MainPageFetcher {
 
     boolean deleteAccount(String password);
 
+    boolean send(String receiver, String message);
+
 }

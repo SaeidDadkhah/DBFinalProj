@@ -151,4 +151,28 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
             return false;
         }
     }
+
+    @Override
+    public boolean send(String receiver, String message) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_MESSAGING);
+            request.put(Constants.F_SENDER, currentUser);
+            request.put(Constants.F_RECEIVER, receiver);
+            request.put(Constants.F_MESSAGE, message);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                return true;
+            else if (Constants.RS_UNSUCCESSFUL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                return false;
+            else
+                return false;
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
