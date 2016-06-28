@@ -1,4 +1,4 @@
-package client.ui;
+package client;
 
 import client.ui.first.FirstPage;
 import client.ui.first.FirstPageFetcher;
