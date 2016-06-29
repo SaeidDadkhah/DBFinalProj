@@ -122,7 +122,7 @@ public class FirstPage extends JFrame {
         gbc.fill = GridBagConstraints.NONE;
         JButton b_signUp = new JButton("Sign up");
         b_signUp.addActionListener(e -> {
-            if (fetcher.signUp(tf_username.getText(), tf_password.getText())) {
+            if (fetcher.signUp(tf_username.getText(), new String(tf_password.getPassword()))) {
                 JOptionPane.showMessageDialog(null,
                         "You have been registered successfully!",
                         "Successful Register",
@@ -138,7 +138,7 @@ public class FirstPage extends JFrame {
         gbc.gridx = 3;
         b_logIn = new JButton("Log in");
         b_logIn.addActionListener(e -> {
-            if (!fetcher.logIn(tf_username.getText(), tf_password.getText())) {
+            if (!fetcher.logIn(tf_username.getText(), new String(tf_password.getPassword()))) {
                 JOptionPane.showMessageDialog(null, "Username or password is not correct.!", "Error", JOptionPane.WARNING_MESSAGE);
             }
         });

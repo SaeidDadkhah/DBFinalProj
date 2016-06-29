@@ -1,7 +1,7 @@
 package client.ui.main;
 
 import client.ui.component.Contacts;
-import org.json.simple.JSONObject;
+import common.Constants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -30,6 +30,11 @@ public class MainPage extends JFrame {
             public boolean deleteAccount(String password) {
                 System.out.println("delete account:\n\tpassword: " + password);
                 return false;
+            }
+
+            @Override
+            public void logout() {
+                System.out.println("Log Out");
             }
 
             @Override
@@ -76,6 +81,10 @@ public class MainPage extends JFrame {
         m_window.add(mi_deactive);
 
         m_window.addSeparator();
+
+        JMenuItem mi_logout = new JMenuItem("Log Out");
+        mi_logout.addActionListener(e -> fetcher.logout());
+        m_window.add(mi_logout);
 
         JMenuItem mi_exit = new JMenuItem("Exit");
         mi_exit.addActionListener(e -> dispose());
@@ -181,11 +190,34 @@ public class MainPage extends JFrame {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Chats");
         root.add(new DefaultMutableTreeNode("Friends"));
         root.add(new DefaultMutableTreeNode("Groups"));
+        root.add(new DefaultMutableTreeNode("Channels"));
         contacts = new Contacts(root);
         getContentPane().add(contacts, gbc);
 
         setVisible(true);
         tf_message.requestFocus();
+    }
+
+    public void setContacts(String type, String[] names) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getModel().getRoot();
+        switch (type) {
+            case Constants.F_FRIENDS:
+                node = (DefaultMutableTreeNode) node.getChildAt(0);
+                break;
+            case Constants.F_GROUPS:
+                node = (DefaultMutableTreeNode) node.getChildAt(1);
+                break;
+            case Constants.F_CHANNELS:
+                node = (DefaultMutableTreeNode) node.getChildAt(2);
+                break;
+            default:
+                System.err.println("invalid type");
+        }
+        node.removeAllChildren();
+        for (String friend : names) {
+            DefaultMutableTreeNode child = new DefaultMutableTreeNode(friend);
+            node.add(child);
+        }
     }
 
 }

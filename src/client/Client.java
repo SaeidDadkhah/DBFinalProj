@@ -5,6 +5,7 @@ import client.ui.first.FirstPageFetcher;
 import client.ui.main.MainPage;
 import client.ui.main.MainPageFetcher;
 import common.Constants;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -57,8 +58,8 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
 
         parser = new JSONParser();
 
-        firstPage = new FirstPage(this);
         currentUser = null;
+        firstPage = new FirstPage(this);
     }
 
     @Override
@@ -100,6 +101,9 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
                 firstPage.dispose();
                 currentUser = username;
                 mainPage = new MainPage(this);
+                updateContacts(Constants.RQ_UPDATE_FREINDS);
+                updateContacts(Constants.RQ_UPDATE_GROUPS);
+                updateContacts(Constants.RQ_UPDATE_CHANNELS);
                 return true;
             } else if (Constants.RS_UNSUCCESSFUL_LOGIN.equals(response.get(Constants.F_RESPONSE)))
                 return false;
@@ -111,6 +115,50 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
         } catch (ParseException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void updateContacts(String type) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, type);
+            request.put(Constants.F_USERNAME, currentUser);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            String responseType;
+            String field;
+            switch (type) {
+                case Constants.RQ_UPDATE_FREINDS:
+                    responseType = Constants.RS_UPDATE_FRIENDS;
+                    field = Constants.F_FRIENDS;
+                    break;
+                case Constants.RQ_UPDATE_GROUPS:
+                    responseType = Constants.RS_UPDATE_GROUPS;
+                    field = Constants.F_GROUPS;
+                    break;
+                case Constants.RQ_UPDATE_CHANNELS:
+                    responseType = Constants.RS_UPDATE_CHANNELS;
+                    field = Constants.F_CHANNELS;
+                    break;
+                default:
+                    System.err.println("Type name is not correct");
+                    return;
+            }
+            if (responseType.equals(response.get(Constants.F_RESPONSE))) {
+                JSONArray array = (JSONArray) response.get(field);
+                String[] names = new String[array.size()];
+                for (int i = 0; i < array.size(); i++) {
+                    names[i] = (String) ((JSONObject) array.get(i)).get(Constants.F_USERNAME);
+                    System.out.println(names[i]);
+                }
+                mainPage.setContacts(field, names);
+            } else {
+                System.err.println("Response name is not correct.");
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
         }
     }
 
@@ -149,6 +197,15 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
         } catch (IOException | ParseException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    @Override
+    public void logout() {
+        if (currentUser != null) {
+            currentUser = null;
+            mainPage.dispose();
+            firstPage = new FirstPage(this);
         }
     }
 

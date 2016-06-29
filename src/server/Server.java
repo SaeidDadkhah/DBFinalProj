@@ -5,6 +5,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import common.Constants;
 import org.bson.Document;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -21,6 +22,8 @@ import java.net.Socket;
  */
 @SuppressWarnings("unchecked")
 public class Server implements Runnable {
+
+    private int couner = 0;
 
     private MongoDatabase db;
 
@@ -77,8 +80,19 @@ public class Server implements Runnable {
                     case Constants.RQ_LOGIN:
                         logIn();
                         break;
+                    case Constants.RQ_UPDATE_FREINDS:
+                    case Constants.RQ_UPDATE_GROUPS:
+                    case Constants.RQ_UPDATE_CHANNELS:
+                        update();
+                        break;
                     case Constants.RQ_DELETE_ACCOUNT:
                         deleteAccount();
+                        break;
+                    case Constants.RQ_MESSAGING:
+                        messaging();
+                        break;
+                    case Constants.RQ_NEW_CHANNEL:
+                        newChannel();
                         break;
                     case Constants.RQ_DISCONNECT:
                         socket.close();
@@ -147,6 +161,45 @@ public class Server implements Runnable {
         }
     }
 
+    private void update() {
+        JSONObject response = new JSONObject();
+        switch ((String) request.get(Constants.F_REQUEST)) {
+            case Constants.RQ_UPDATE_FREINDS:
+                response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_FRIENDS);
+                break;
+            case Constants.RQ_UPDATE_GROUPS:
+                response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_GROUPS);
+                break;
+            case Constants.RQ_UPDATE_CHANNELS:
+                response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_CHANNELS);
+                break;
+        }
+        // friends
+        JSONArray ja = new JSONArray();
+        JSONObject obj = new JSONObject();
+        obj.put(Constants.F_USERNAME, "hasti" + couner);
+        ja.add(obj);
+        obj = new JSONObject();
+        obj.put(Constants.F_USERNAME, "saeid2" + couner++);
+        ja.add(obj);
+        switch ((String) request.get(Constants.F_REQUEST)) {
+            case Constants.RQ_UPDATE_FREINDS:
+                response.put(Constants.F_FRIENDS, ja);
+                break;
+            case Constants.RQ_UPDATE_GROUPS:
+                response.put(Constants.F_GROUPS, ja);
+                break;
+            case Constants.RQ_UPDATE_CHANNELS:
+                response.put(Constants.F_CHANNELS, ja);
+                break;
+        }
+        try {
+            dos.writeUTF(response.toJSONString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private boolean deleteAccount() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
@@ -172,6 +225,14 @@ public class Server implements Runnable {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private void messaging() {
+
+    }
+
+    private void newChannel() {
+
     }
 
 }
