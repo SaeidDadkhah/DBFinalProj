@@ -10,6 +10,8 @@ public interface MainPageFetcher {
 
     void logout();
 
-    boolean send(String receiver, String message);
+    boolean send(String message);
+
+    boolean setCurrentContact(String contact);
 
 }

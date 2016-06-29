@@ -23,7 +23,7 @@ import java.net.Socket;
 @SuppressWarnings("unchecked")
 public class Server implements Runnable {
 
-    private int couner = 0;
+    private int partialCounter = 0;
 
     private MongoDatabase db;
 
@@ -80,7 +80,7 @@ public class Server implements Runnable {
                     case Constants.RQ_LOGIN:
                         logIn();
                         break;
-                    case Constants.RQ_UPDATE_FREINDS:
+                    case Constants.RQ_UPDATE_FRIENDS:
                     case Constants.RQ_UPDATE_GROUPS:
                     case Constants.RQ_UPDATE_CHANNELS:
                         update();
@@ -164,7 +164,7 @@ public class Server implements Runnable {
     private void update() {
         JSONObject response = new JSONObject();
         switch ((String) request.get(Constants.F_REQUEST)) {
-            case Constants.RQ_UPDATE_FREINDS:
+            case Constants.RQ_UPDATE_FRIENDS:
                 response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_FRIENDS);
                 break;
             case Constants.RQ_UPDATE_GROUPS:
@@ -177,20 +177,20 @@ public class Server implements Runnable {
         // friends
         JSONArray ja = new JSONArray();
         JSONObject obj = new JSONObject();
-        obj.put(Constants.F_USERNAME, "hasti" + couner);
+        obj.put(Constants.F_USERNAME, "hasti" + partialCounter);
         ja.add(obj);
         obj = new JSONObject();
-        obj.put(Constants.F_USERNAME, "saeid2" + couner++);
+        obj.put(Constants.F_USERNAME, "saeid2" + partialCounter++);
         ja.add(obj);
         switch ((String) request.get(Constants.F_REQUEST)) {
-            case Constants.RQ_UPDATE_FREINDS:
-                response.put(Constants.F_FRIENDS, ja);
+            case Constants.RQ_UPDATE_FRIENDS:
+                response.put(Constants.F_FRIEND, ja);
                 break;
             case Constants.RQ_UPDATE_GROUPS:
-                response.put(Constants.F_GROUPS, ja);
+                response.put(Constants.F_GROUP_NAME, ja);
                 break;
             case Constants.RQ_UPDATE_CHANNELS:
-                response.put(Constants.F_CHANNELS, ja);
+                response.put(Constants.F_CHANNEL_NAME, ja);
                 break;
         }
         try {

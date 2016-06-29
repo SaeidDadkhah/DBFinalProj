@@ -32,6 +32,7 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
     private MainPage mainPage;
 
     private String currentUser;
+    private String currentContact;
 
     public static void main(String[] args) {
         new Client();
@@ -101,7 +102,7 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
                 firstPage.dispose();
                 currentUser = username;
                 mainPage = new MainPage(this);
-                updateContacts(Constants.RQ_UPDATE_FREINDS);
+                updateContacts(Constants.RQ_UPDATE_FRIENDS);
                 updateContacts(Constants.RQ_UPDATE_GROUPS);
                 updateContacts(Constants.RQ_UPDATE_CHANNELS);
                 return true;
@@ -130,17 +131,17 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
             String responseType;
             String field;
             switch (type) {
-                case Constants.RQ_UPDATE_FREINDS:
+                case Constants.RQ_UPDATE_FRIENDS:
                     responseType = Constants.RS_UPDATE_FRIENDS;
-                    field = Constants.F_FRIENDS;
+                    field = Constants.F_FRIEND;
                     break;
                 case Constants.RQ_UPDATE_GROUPS:
                     responseType = Constants.RS_UPDATE_GROUPS;
-                    field = Constants.F_GROUPS;
+                    field = Constants.F_GROUP_NAME;
                     break;
                 case Constants.RQ_UPDATE_CHANNELS:
                     responseType = Constants.RS_UPDATE_CHANNELS;
-                    field = Constants.F_CHANNELS;
+                    field = Constants.F_CHANNEL_NAME;
                     break;
                 default:
                     System.err.println("Type name is not correct");
@@ -210,12 +211,12 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
     }
 
     @Override
-    public boolean send(String receiver, String message) {
+    public boolean send(String message) {
         try {
             JSONObject request = new JSONObject();
             request.put(Constants.F_REQUEST, Constants.RQ_MESSAGING);
             request.put(Constants.F_SENDER, currentUser);
-            request.put(Constants.F_RECEIVER, receiver);
+            request.put(Constants.F_RECEIVER, currentContact);
             request.put(Constants.F_MESSAGE, message);
             System.out.println(request.toJSONString());
             dos.writeUTF(request.toJSONString());
@@ -232,4 +233,15 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
             return false;
         }
     }
+
+    @Override
+    public boolean setCurrentContact(String currentContact) {
+        this.currentContact = currentContact;
+        if (currentContact == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }

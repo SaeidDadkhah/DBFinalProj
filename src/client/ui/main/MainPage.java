@@ -8,7 +8,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Enumeration;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:14 AM.
@@ -16,6 +15,7 @@ import java.util.Enumeration;
  */
 public class MainPage extends JFrame {
 
+    private JLabel l_username;
     private JTextArea ta_messages;
     private JTextField tf_message;
     private JButton b_send;
@@ -38,10 +38,17 @@ public class MainPage extends JFrame {
             }
 
             @Override
-            public boolean send(String receiver, String message) {
-                System.out.println("to: " + receiver + "\nmessage: " + message);
+            public boolean send(String message) {
+                System.out.println("\nmessage: " + message);
                 return true;
             }
+
+            @Override
+            public boolean setCurrentContact(String contact) {
+                System.out.println("Current contact: " + contact);
+                return false;
+            }
+
         });
     }
 
@@ -122,7 +129,8 @@ public class MainPage extends JFrame {
         gbc.gridheight = 1;
         gbc.weightx = 1;
         gbc.weighty = 0;
-        getContentPane().add(new JLabel("USERNAME"), gbc);
+        l_username = new JLabel("Select o friend, group or channel to see messages and chat... ");
+        getContentPane().add(l_username, gbc);
 
         gbc.gridy = 1;
         gbc.weighty = 1;
@@ -152,19 +160,11 @@ public class MainPage extends JFrame {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getLastSelectedPathComponent();
             if (tf_message.getText().length() > 0
                     && node != null) {
-                if (node.isLeaf()) {
-                    if (fetcher.send(node.toString(), tf_message.getText())) {
-                        ta_messages.append("me: " + tf_message.getText() + "\n");
-                        tf_message.setText("");
-                    }
-                } else {
-                    Enumeration enumeration = node.depthFirstEnumeration();
-                    while (enumeration.hasMoreElements()) {
-                        node = (DefaultMutableTreeNode) enumeration.nextElement();
-                        if (node.isLeaf())
-                            fetcher.send(node.toString(), tf_message.getText());
-                    }
+                if (fetcher.send(tf_message.getText())) {
+                    ta_messages.append("me: " + tf_message.getText() + "\n");
+                    tf_message.setText("");
                 }
+
             }
         });
         getContentPane().add(b_send, gbc);
@@ -192,7 +192,11 @@ public class MainPage extends JFrame {
         root.add(new DefaultMutableTreeNode("Groups"));
         root.add(new DefaultMutableTreeNode("Channels"));
         contacts = new Contacts(root);
+        contacts.addTreeSelectionListener(e -> setCurrentContact());
         getContentPane().add(contacts, gbc);
+
+        tf_message.setEditable(false);
+        fetcher.setCurrentContact(null);
 
         setVisible(true);
         tf_message.requestFocus();
@@ -201,13 +205,13 @@ public class MainPage extends JFrame {
     public void setContacts(String type, String[] names) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getModel().getRoot();
         switch (type) {
-            case Constants.F_FRIENDS:
+            case Constants.F_FRIEND:
                 node = (DefaultMutableTreeNode) node.getChildAt(0);
                 break;
-            case Constants.F_GROUPS:
+            case Constants.F_GROUP_NAME:
                 node = (DefaultMutableTreeNode) node.getChildAt(1);
                 break;
-            case Constants.F_CHANNELS:
+            case Constants.F_CHANNEL_NAME:
                 node = (DefaultMutableTreeNode) node.getChildAt(2);
                 break;
             default:
@@ -217,6 +221,15 @@ public class MainPage extends JFrame {
         for (String friend : names) {
             DefaultMutableTreeNode child = new DefaultMutableTreeNode(friend);
             node.add(child);
+        }
+    }
+
+    private void setCurrentContact() {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getLastSelectedPathComponent();
+        if (node != null && node.isLeaf()) {
+            l_username.setText((String) node.getUserObject());
+            tf_message.setEditable(true);
+            fetcher.setCurrentContact((String) node.getUserObject());
         }
     }
 
