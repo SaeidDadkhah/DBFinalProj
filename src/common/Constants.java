@@ -18,6 +18,7 @@ public class Constants {
     public static final String C_MESSAGES = "messages";
     public static final String C_CHANNELS = "channels";
     public static final String C_GROUPS = "groups";
+    public static final String C_FRIENDS = "friends";
 
     // RQ stands for Request
     public static final String RQ_DISCONNECT = "disconnect";
@@ -63,7 +64,7 @@ public class Constants {
     public static final String F_REQUEST = "request";
     public static final String F_RESPONSE = "response";
     public static final String F_USERNAME = "username";
-    public static final String F_FRIEND = "friend";
+    public static final String F_FRIENDS = "friends";
     public static final String F_SENDER = "sender";
     public static final String F_RECEIVER = "receiver";
     public static final String F_ADMIN = "admin";
@@ -73,6 +74,5 @@ public class Constants {
     public static final String F_GROUP_MEMBER = "group member";
     public static final String F_PASSWORD = "password";
     public static final String F_MESSAGE = "message";
-
 
 }

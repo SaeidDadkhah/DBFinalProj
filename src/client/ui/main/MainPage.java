@@ -205,7 +205,7 @@ public class MainPage extends JFrame {
     public void setContacts(String type, String[] names) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getModel().getRoot();
         switch (type) {
-            case Constants.F_FRIEND:
+            case Constants.F_FRIENDS:
                 node = (DefaultMutableTreeNode) node.getChildAt(0);
                 break;
             case Constants.F_GROUP_NAME:

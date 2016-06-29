@@ -133,7 +133,7 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
             switch (type) {
                 case Constants.RQ_UPDATE_FRIENDS:
                     responseType = Constants.RS_UPDATE_FRIENDS;
-                    field = Constants.F_FRIEND;
+                    field = Constants.F_FRIENDS;
                     break;
                 case Constants.RQ_UPDATE_GROUPS:
                     responseType = Constants.RS_UPDATE_GROUPS;

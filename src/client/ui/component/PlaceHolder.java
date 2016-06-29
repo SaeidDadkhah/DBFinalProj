@@ -9,9 +9,9 @@ import java.awt.*;
  */
 public class PlaceHolder extends JButton {
 
-    private JFrame parent;
+    private Window parent;
 
-    public PlaceHolder(JFrame parent) {
+    public PlaceHolder(Window parent) {
         this.parent = parent;
     }
 
