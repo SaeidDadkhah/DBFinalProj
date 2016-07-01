@@ -88,7 +88,7 @@ public class Server implements Runnable {
                         messaging();
                         break;
                     case Constants.RQ_NEW_CHANNEL:
-                        newChanal();
+                        newChannel();
                         break;
                     case Constants.RQ_NEW_GROUP:
                         newGroup();
@@ -246,7 +246,7 @@ public class Server implements Runnable {
         }
     }
 
-    public boolean newChanal() {
+    public boolean newChannel() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
