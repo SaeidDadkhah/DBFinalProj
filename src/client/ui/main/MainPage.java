@@ -2,7 +2,6 @@ package client.ui.main;
 
 import client.ui.component.Contacts;
 import client.ui.main.profile.ProfilePage;
-import client.ui.main.profile.ProfilePageFetcher;
 import common.Constants;
 
 import javax.swing.*;
@@ -10,6 +9,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:14 AM.
@@ -21,12 +22,18 @@ public class MainPage extends JFrame {
     private JTextArea ta_messages;
     private JTextField tf_message;
     private JButton b_send;
+    private JButton b_refresh;
     private Contacts contacts;
 
     private MainPageFetcher fetcher;
 
     public static void main(String[] args) {
         new MainPage(new MainPageFetcher() {
+
+            @Override
+            public void closing() {
+                System.out.println("closing");
+            }
 
             @Override
             public boolean deleteAccount(String password) {
@@ -52,8 +59,8 @@ public class MainPage extends JFrame {
             }
 
             @Override
-            public ProfilePageFetcher getProfilePageFetcher() {
-                return (name, birthday, email, biography, phone, password) -> System.out.println("name: "
+            public void showProfilePage() {
+                new ProfilePage((name, birthday, email, biography, phone, password) -> System.out.println("name: "
                         + name
                         + "\nbirthday: "
                         + birthday
@@ -64,7 +71,20 @@ public class MainPage extends JFrame {
                         + "\nphone: "
                         + phone
                         + "\npassword: "
-                        + password);
+                        + password),
+                        "Saeid",
+                        "saeid",
+                        "1995.02.26",
+                        "saeid.dadkhah@live.com",
+                        "Computer Engineering student :)",
+                        "+989388835866",
+                        "noneOfUrBusiness",
+                        "files\\photo_2016-06-30_14-33-28.jpg");
+            }
+
+            @Override
+            public void showSearchPage() {
+                System.out.println("search!");
             }
         });
     }
@@ -80,6 +100,14 @@ public class MainPage extends JFrame {
         setLocation((int) ss.getWidth() / 7, (int) ss.getHeight() / 7);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                fetcher.closing();
+            }
+        });
+
         // Menu Bar
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -89,29 +117,30 @@ public class MainPage extends JFrame {
         menuBar.add(m_window);
 
         JMenuItem mi_profile = new JMenuItem("Profile Page");
-        mi_profile.addActionListener(e -> new ProfilePage(fetcher.getProfilePageFetcher(),
-                "Saeid",
-                "saeid",
-                "1995.02.26",
-                "saeid.dadkhah@live.com",
-                "Computer Engineering student :)",
-                "+989388835866",
-                "noneOfUrBusiness",
-                "files\\photo_2016-06-30_14-33-28.jpg"));
+        mi_profile.addActionListener(e -> fetcher.showProfilePage());
         m_window.add(mi_profile);
 
         JMenuItem mi_search = new JMenuItem("Search");
+        mi_search.addActionListener(e -> fetcher.showSearchPage());
         m_window.add(mi_search);
 
-        JMenuItem mi_deactive = new JMenuItem("Delete Account");
-        mi_deactive.addActionListener(e -> {
+        JMenuItem mi_deleteAccount = new JMenuItem("Delete Account");
+        mi_deleteAccount.addActionListener(e -> {
             String password = JOptionPane.showInputDialog(null,
                     "Please enter your password to verify delete account.",
                     "Password",
                     JOptionPane.QUESTION_MESSAGE);
             fetcher.deleteAccount(password);
         });
-        m_window.add(mi_deactive);
+        m_window.add(mi_deleteAccount);
+
+        m_window.addSeparator();
+
+        JMenuItem mi_newGroup = new JMenuItem("Add New Group");
+        m_window.add(mi_newGroup);
+
+        JMenuItem mi_newChannel = new JMenuItem("Add New Channel");
+        m_window.add(mi_newChannel);
 
         m_window.addSeparator();
 
@@ -172,8 +201,12 @@ public class MainPage extends JFrame {
             @Override
             public void keyTyped(KeyEvent e) {
                 super.keyTyped(e);
-                if (e.getKeyChar() == '\n')
-                    b_send.doClick();
+                if (e.getKeyChar() == '\n') {
+                    if (tf_message.getText().length() > 0)
+                        b_send.doClick();
+                    else
+                        b_refresh.doClick();
+                }
             }
         });
         getContentPane().add(tf_message, gbc);
@@ -205,7 +238,8 @@ public class MainPage extends JFrame {
 
         gbc.gridx = 3;
         gbc.ipadx = 0;
-        getContentPane().add(new JButton("Refresh"), gbc);
+        b_refresh = new JButton("Refresh");
+        getContentPane().add(b_refresh, gbc);
 
         gbc.gridx = 4;
         gbc.gridy = 0;
@@ -244,15 +278,16 @@ public class MainPage extends JFrame {
                 System.err.println("invalid type");
         }
         node.removeAllChildren();
-        for (String friend : names) {
-            DefaultMutableTreeNode child = new DefaultMutableTreeNode(friend);
-            node.add(child);
-        }
+        if (names != null)
+            for (String friend : names) {
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(friend);
+                node.add(child);
+            }
     }
 
     private void setCurrentContact() {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getLastSelectedPathComponent();
-        if (node != null && node.isLeaf()) {
+        if (node != null && node.getLevel() == 2) {
             l_username.setText((String) node.getUserObject());
             tf_message.setEditable(true);
             fetcher.setCurrentContact((String) node.getUserObject());

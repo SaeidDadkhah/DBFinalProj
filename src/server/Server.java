@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+
 import org.json.simple.JSONArray;
 
 /**
@@ -186,6 +187,7 @@ public class Server implements Runnable {
             return false;
         }
     }
+
     public boolean deleteAccount() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
@@ -214,7 +216,7 @@ public class Server implements Runnable {
         }
     }
 
-    public boolean messaging(){
+    public boolean messaging() {
 
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
@@ -267,8 +269,7 @@ public class Server implements Runnable {
                     System.out.println(response.toJSONString());
                     dos.writeUTF(response.toJSONString());
                     return true;
-                }
-                else {
+                } else {
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_NEW_CHANNEL);
                     System.out.println(response.toJSONString());
@@ -309,8 +310,7 @@ public class Server implements Runnable {
                     System.out.println(response.toJSONString());
                     dos.writeUTF(response.toJSONString());
                     return true;
-                }
-                else {
+                } else {
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_NEW_GROUP);
                     System.out.println(response.toJSONString());
@@ -342,7 +342,7 @@ public class Server implements Runnable {
                                 .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
                 if (res2.first() != null) {
 
-                    ArrayList<Document> members = (ArrayList<Document>)res2.first().get(Constants.F_GROUP_MEMBER);
+                    ArrayList<Document> members = (ArrayList<Document>) res2.first().get(Constants.F_GROUP_MEMBER);
                     members.add(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)));
 
                     db.getCollection(Constants.C_GROUPS)
@@ -354,8 +354,7 @@ public class Server implements Runnable {
                     System.out.println(response.toJSONString());
                     dos.writeUTF(response.toJSONString());
                     return true;
-                }
-                else {
+                } else {
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP);
                     System.out.println(response.toJSONString());
@@ -383,7 +382,7 @@ public class Server implements Runnable {
                             .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
             if (res.first() != null) {
 
-                ArrayList<Document> members = (ArrayList<Document>)res.first().get(Constants.F_CHANNEL_MEMBER);
+                ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_CHANNEL_MEMBER);
                 members.add(new Document(Constants.F_CHANNEL_MEMBER, request.get(Constants.F_CHANNEL_MEMBER)));
 
                 db.getCollection(Constants.C_CHANNELS)
@@ -395,7 +394,6 @@ public class Server implements Runnable {
                 System.out.println(response.toJSONString());
                 dos.writeUTF(response.toJSONString());
                 return true;
-
 
 
             } else {
@@ -469,12 +467,13 @@ public class Server implements Runnable {
             JSONObject response = new JSONObject();
             response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_FRIENDS);
 
-            JSONArray arr = new JSONArray();
+            if (res.first().get(Constants.F_FRIENDS) != null) {
+                JSONArray arr = new JSONArray();
+                for (Document doc : (ArrayList<Document>) res.first().get(Constants.F_FRIENDS))
+                    arr.add(doc);
 
-            for(Document doc: (ArrayList<Document>)res.first().get(Constants.F_FRIENDS))
-                arr.add(doc);
-
-            response.put(Constants.F_FRIENDS, arr);
+                response.put(Constants.F_FRIENDS, arr);
+            }
             System.out.println(response.toJSONString());
             dos.writeUTF(response.toJSONString());
             return true;
@@ -558,7 +557,6 @@ public class Server implements Runnable {
             response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_PROFILE);
 
 
-
             System.out.println(response.toJSONString());
             dos.writeUTF(response.toJSONString());
             return true;
@@ -596,14 +594,14 @@ public class Server implements Runnable {
                             .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
             if (res.first() != null) {
 
-                ArrayList<Document> members = (ArrayList<Document>)res.first().get(Constants.F_GROUP_MEMBER);
+                ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER);
                 boolean flag = false;
-                for(Document temp : members)
-                    if (temp.get(Constants.F_MENTIONED).equals(request.get(Constants.F_MENTIONED))){
+                for (Document temp : members)
+                    if (temp.get(Constants.F_MENTIONED).equals(request.get(Constants.F_MENTIONED))) {
                         flag = true;
                         break;
                     }
-                if(flag){
+                if (flag) {
                     db.getCollection(Constants.C_MENTIONS).insertOne(new Document()
                             .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME))
                             .append(Constants.F_MENTIONED, request.get(Constants.F_MENTIONED))
@@ -614,8 +612,7 @@ public class Server implements Runnable {
                     System.out.println(response.toJSONString());
                     dos.writeUTF(response.toJSONString());
                     return true;
-                }
-                else{
+                } else {
 
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_MENTION);
@@ -623,8 +620,7 @@ public class Server implements Runnable {
                     dos.writeUTF(response.toJSONString());
                     return false;
                 }
-            }
-            else {
+            } else {
                 JSONObject response = new JSONObject();
                 response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_MENTION);
                 System.out.println(response.toJSONString());

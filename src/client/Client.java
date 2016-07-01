@@ -5,6 +5,8 @@ import client.ui.first.FirstPageFetcher;
 import client.ui.main.MainPage;
 import client.ui.main.MainPageFetcher;
 import client.ui.main.profile.ProfilePageFetcher;
+import client.ui.main.search.SearchPage;
+import client.ui.main.search.SearchPageFetcher;
 import common.Constants;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -22,7 +24,7 @@ import java.net.Socket;
  * Project: DBFinalProject
  */
 @SuppressWarnings("unchecked")
-public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFetcher {
+public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFetcher, SearchPageFetcher {
 
     private DataInputStream dis;
     private DataOutputStream dos;
@@ -149,11 +151,16 @@ public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFet
                     return;
             }
             if (responseType.equals(response.get(Constants.F_RESPONSE))) {
-                JSONArray array = (JSONArray) response.get(field);
-                String[] names = new String[array.size()];
-                for (int i = 0; i < array.size(); i++) {
-                    names[i] = (String) ((JSONObject) array.get(i)).get(Constants.F_USERNAME);
-                    System.out.println(names[i]);
+                String[] names;
+                if (response.get(field) != null) {
+                    JSONArray array = (JSONArray) response.get(field);
+                    names = new String[array.size()];
+                    for (int i = 0; i < array.size(); i++) {
+                        names[i] = (String) ((JSONObject) array.get(i)).get(Constants.F_USERNAME);
+                        System.out.println(names[i]);
+                    }
+                } else {
+                    names = null;
                 }
                 mainPage.setContacts(field, names);
             } else {
@@ -174,6 +181,36 @@ public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFet
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void showProfilePage() {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_GET_PROFILE);
+            request.put(Constants.F_USERNAME, currentUser);
+            dos.writeUTF(request.toJSONString());
+
+            System.out.println(dis.readUTF());
+
+//            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+//            new ProfilePage(this,
+//                    (String) response.get(Constants.F_NAME),
+//                    (String) response.get(Constants.F_USERNAME),
+//                    (String) response.get(Constants.F_BIRTHDAY),
+//                    (String) response.get(Constants.F_EMAIL),
+//                    (String) response.get(Constants.F_BIOGRAPHY),
+//                    (String) response.get(Constants.F_PHONE_NUMBER),
+//                    (String) response.get(Constants.F_PASSWORD),
+//                    (String) response.get(Constants.F_PICTURE));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void showSearchPage() {
+        new SearchPage(this);
     }
 
     @Override
@@ -242,12 +279,37 @@ public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFet
     }
 
     @Override
-    public ProfilePageFetcher getProfilePageFetcher() {
-        return this;
+    public void setInformation(String name, String birthday, String email, String biography, String phone, String password) {
+        JSONObject request = new JSONObject();
+        request.put(Constants.F_REQUEST, Constants.RQ_UPDATE_PROFILE);
+        request.put(Constants.F_NAME, name);
+        request.put(Constants.F_BIRTHDAY, birthday);
+        request.put(Constants.F_EMAIL, email);
+        request.put(Constants.F_BIOGRAPHY, biography);
+        request.put(Constants.F_BIRTHDAY, birthday);
+        request.put(Constants.F_PHONE_NUMBER, phone);
+        request.put(Constants.F_PASSWORD, password);
     }
 
     @Override
-    public void setInformation(String name, String birthday, String email, String biography, String phone, String password) {
+    public String[] searchName(String name) {
+//        JSONObject request = new JSONObject();
+//        request.put(Constants.F_REQUEST, Constants.rq)
+        return new String[]{"hasti", "saeid2"};
+    }
+
+    @Override
+    public String[] searchHashtag(String hashtag) {
+        return new String[]{"message1", "message2"};
+    }
+
+    @Override
+    public void add(String name) {
+
+    }
+
+    @Override
+    public void message(String name) {
 
     }
 }
