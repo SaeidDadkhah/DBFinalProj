@@ -1,6 +1,8 @@
 package client.ui.main;
 
 import client.ui.component.Contacts;
+import client.ui.main.profile.ProfilePage;
+import client.ui.main.profile.ProfilePageFetcher;
 import common.Constants;
 
 import javax.swing.*;
@@ -49,6 +51,21 @@ public class MainPage extends JFrame {
                 return false;
             }
 
+            @Override
+            public ProfilePageFetcher getProfilePageFetcher() {
+                return (name, birthday, email, biography, phone, password) -> System.out.println("name: "
+                        + name
+                        + "\nbirthday: "
+                        + birthday
+                        + "\nEMail"
+                        + email
+                        + "\nbiography: "
+                        + biography
+                        + "\nphone: "
+                        + phone
+                        + "\npassword: "
+                        + password);
+            }
         });
     }
 
@@ -71,7 +88,16 @@ public class MainPage extends JFrame {
         JMenu m_window = new JMenu("Window");
         menuBar.add(m_window);
 
-        JMenuItem mi_profile = new JMenuItem("Profile");
+        JMenuItem mi_profile = new JMenuItem("Profile Page");
+        mi_profile.addActionListener(e -> new ProfilePage(fetcher.getProfilePageFetcher(),
+                "Saeid",
+                "saeid",
+                "1995.02.26",
+                "saeid.dadkhah@live.com",
+                "Computer Engineering student :)",
+                "+989388835866",
+                "noneOfUrBusiness",
+                "files\\photo_2016-06-30_14-33-28.jpg"));
         m_window.add(mi_profile);
 
         JMenuItem mi_search = new JMenuItem("Search");
@@ -101,7 +127,7 @@ public class MainPage extends JFrame {
         JMenu m_friend = new JMenu("Friend");
         menuBar.add(m_friend);
 
-        JMenuItem mi_friendProfile = new JMenuItem("Profile");
+        JMenuItem mi_friendProfile = new JMenuItem("Profile Page");
         m_friend.add(mi_friendProfile);
 
         JMenuItem mi_privateChat = new JMenuItem("Private Chat");
@@ -129,7 +155,7 @@ public class MainPage extends JFrame {
         gbc.gridheight = 1;
         gbc.weightx = 1;
         gbc.weighty = 0;
-        l_username = new JLabel("Select o friend, group or channel to see messages and chat... ");
+        l_username = new JLabel("Select a friend, group or channel to see messages and chat... ");
         getContentPane().add(l_username, gbc);
 
         gbc.gridy = 1;

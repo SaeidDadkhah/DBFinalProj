@@ -4,6 +4,7 @@ import client.ui.first.FirstPage;
 import client.ui.first.FirstPageFetcher;
 import client.ui.main.MainPage;
 import client.ui.main.MainPageFetcher;
+import client.ui.main.profile.ProfilePageFetcher;
 import common.Constants;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,7 +22,7 @@ import java.net.Socket;
  * Project: DBFinalProject
  */
 @SuppressWarnings("unchecked")
-public class Client implements FirstPageFetcher, MainPageFetcher {
+public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFetcher {
 
     private DataInputStream dis;
     private DataOutputStream dos;
@@ -237,11 +238,16 @@ public class Client implements FirstPageFetcher, MainPageFetcher {
     @Override
     public boolean setCurrentContact(String currentContact) {
         this.currentContact = currentContact;
-        if (currentContact == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return currentContact != null;
     }
 
+    @Override
+    public ProfilePageFetcher getProfilePageFetcher() {
+        return this;
+    }
+
+    @Override
+    public void setInformation(String name, String birthday, String email, String biography, String phone, String password) {
+
+    }
 }

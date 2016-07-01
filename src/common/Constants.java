@@ -19,6 +19,8 @@ public class Constants {
     public static final String C_CHANNELS = "channels";
     public static final String C_GROUPS = "groups";
     public static final String C_FRIENDS = "friends";
+    public static final String C_HASHTAGS = "hashtags";
+    public static final String C_MENTIONS = "mentions";
 
     // RQ stands for Request
     public static final String RQ_DISCONNECT = "disconnect";
@@ -32,7 +34,11 @@ public class Constants {
     public static final String RQ_NEW_CHANNEL = "new channel";
     public static final String RQ_NEW_GROUP = "new group";
     public static final String RQ_ADD_TO_GROUP = "add to group";
-
+    public static final String RQ_JOIN_A_CHANNEL = "join a channel";
+    public static final String RQ_GET_PROFILE = "get profile";
+    public static final String RQ_UPDATE_PROFILE = "update profile";
+    public static final String RQ_HASHTAG = "hashtag";
+    public static final String RQ_MENTION = "mention";
     // RS stands for Request
     public static final String RS_SUCCESSFUL_SIGNUP = "successful signup";
     public static final String RS_UNSUCCESSFUL_SIGNUP = "unsuccessful signup";
@@ -55,9 +61,20 @@ public class Constants {
     public static final String RS_SUCCESSFUL_ADD_TO_GROUP = "successful add to group";
     public static final String RS_UNSUCCESSFUL_ADD_TO_GROUP = "unsuccessful add to group";
 
+    public static final String RS_SUCCESSFUL_JOIN_A_CHANNEL = "successful join a channel";
+    public static final String RS_UNSUCCESSFUL_JOIN_A_CHANNEL = "unsuccessful join a channel";
+
+    public static final String RS_SUCCESSFUL_MENTION = "successful mention";
+    public static final String RS_UNSUCCESSFUL_MENTION = "unsuccessful mention";
+
+    public static final String RS_GET_PROFILE = "get profile";
+    public static final String RS_UPDATE_PROFILE = "update profile";
+    //public static final String RS_UNSUCCESSFUL_GET_PROFILE = "unsuccessful get profile";
+
     public static final String RS_UPDATE_FRIENDS = "update friends response";
     public static final String RS_UPDATE_GROUPS = "update groups response";
     public static final String RS_UPDATE_CHANNELS = "update channels response";
+    public static final String RS_HASHTAG = "hashtag";
 
 
     // F stands for Field
@@ -74,5 +91,15 @@ public class Constants {
     public static final String F_GROUP_MEMBER = "group member";
     public static final String F_PASSWORD = "password";
     public static final String F_MESSAGE = "message";
+    public static final String F_TIME = "time";
+    public static final String F_NAME = "name";
+    public static final String F_BIRTHDAY = "birthday";
+    public static final String F_EMAIL = "email";
+    public static final String F_BIOGRAPHY = "biography";
+    public static final String F_PHONE_NUMBER = "phone number";
+    public static final String F_PICTURE = "picture";
+    public static final String F_HASHTAG = "hashtag";
+    public static final String F_MENTIONED = "mentioned";
+    public static final String F_MID = "count";
 
 }
