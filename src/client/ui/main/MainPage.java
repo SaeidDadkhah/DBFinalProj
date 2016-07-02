@@ -6,6 +6,8 @@ import common.Constants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -276,25 +278,33 @@ public class MainPage extends JFrame {
 
     public void setContacts(String type, String[] names) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) contacts.getModel().getRoot();
+        int index;
         switch (type) {
             case Constants.F_FRIENDS:
-                node = (DefaultMutableTreeNode) node.getChildAt(0);
+                index = 0;
                 break;
             case Constants.F_GROUP_MEMBER:
-                node = (DefaultMutableTreeNode) node.getChildAt(1);
+                index = 1;
                 break;
             case Constants.F_CHANNEL_MEMBER:
-                node = (DefaultMutableTreeNode) node.getChildAt(2);
+                index = 2;
                 break;
             default:
+                index = -1;
                 System.err.println("invalid type");
         }
+        DefaultTreeModel model = ((DefaultTreeModel) contacts.getModel());
+        node = (DefaultMutableTreeNode) node.getChildAt(index);
         node.removeAllChildren();
+        model.removeNodeFromParent(node);
+        model.insertNodeInto(node, (DefaultMutableTreeNode) contacts.getModel().getRoot(), index);
+
         if (names != null)
-            for (String friend : names) {
-                DefaultMutableTreeNode child = new DefaultMutableTreeNode(friend);
-                node.add(child);
+            for (int i = 0; i < names.length; i++) {
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(names[i]);
+                model.insertNodeInto(child, node, i);
             }
+        contacts.expandPath(new TreePath(node.getPath()));
     }
 
     private void setCurrentContact() {

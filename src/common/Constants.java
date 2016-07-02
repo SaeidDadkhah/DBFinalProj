@@ -128,5 +128,4 @@ public class Constants {
     public static final String F_MENTIONED = "mentioned";
     public static final String F_MID = "count";
 
-
 }

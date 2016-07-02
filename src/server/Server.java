@@ -471,8 +471,8 @@ public class Server implements Runnable {
                             .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
             if (res.first() != null && res2.first() != null) {
                 ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER);
-                if (!members.contains(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)))) {
-                    members.add(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)));
+                if (!members.contains(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_NAME)))) {
+                    members.add(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_NAME)));
                     db.getCollection(Constants.C_USERS)
                             .updateOne(new Document(Constants.F_USERNAME, request.get(Constants.F_GROUP_MEMBER)),
                                     new Document("$set", new Document(Constants.F_GROUP_MEMBER, members)));
