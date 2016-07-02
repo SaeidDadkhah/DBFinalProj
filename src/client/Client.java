@@ -4,6 +4,8 @@ import client.ui.first.FirstPage;
 import client.ui.first.FirstPageFetcher;
 import client.ui.main.MainPage;
 import client.ui.main.MainPageFetcher;
+import client.ui.main.input.BaseInput;
+import client.ui.main.input.InputFetcher;
 import client.ui.main.profile.ProfilePageFetcher;
 import client.ui.main.search.SearchPage;
 import client.ui.main.search.SearchPageFetcher;
@@ -18,13 +20,19 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-27 11:06 AM.
  * Project: DBFinalProject
  */
 @SuppressWarnings("unchecked")
-public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFetcher, SearchPageFetcher {
+public class Client implements
+        FirstPageFetcher,
+        MainPageFetcher,
+        ProfilePageFetcher,
+        SearchPageFetcher,
+        InputFetcher {
 
     private DataInputStream dis;
     private DataOutputStream dos;
@@ -240,6 +248,16 @@ public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFet
     }
 
     @Override
+    public void showNewGroupPage() {
+        new BaseInput(this, BaseInput.T_GROUP);
+    }
+
+    @Override
+    public void showNewChannelPage() {
+        new BaseInput(this, BaseInput.T_CHANNEL);
+    }
+
+    @Override
     public void logout() {
         if (currentUser != null) {
             currentUser = null;
@@ -293,14 +311,67 @@ public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFet
 
     @Override
     public String[] searchName(String name) {
-//        JSONObject request = new JSONObject();
-//        request.put(Constants.F_REQUEST, Constants.rq)
-        return new String[]{"hasti", "saeid2"};
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_NAME_SEARCH);
+            request.put(Constants.F_NAME, name);
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_NAME_SEARCH.equals(response.get(Constants.F_RESPONSE))) {
+                ArrayList<String> res = new ArrayList();
+
+                JSONArray array = (JSONArray) response.get(Constants.F_USERNAME);
+                for (int i = 0; i < array.size(); i++)
+                    res.add((String) ((JSONObject) array.get(i)).get(Constants.F_USERNAME));
+
+                array = (JSONArray) response.get(Constants.F_GROUP_NAME);
+                for (Object anArray : array)
+                    res.add((String) ((JSONObject) anArray).get(Constants.F_GROUP_NAME));
+
+                array = (JSONArray) response.get(Constants.F_CHANNEL_NAME);
+                for (int i = 0; i < array.size(); i++)
+                    res.add((String) ((JSONObject) array.get(i)).get(Constants.F_CHANNEL_NAME));
+                String[] resArray = new String[res.size()];
+                for (int i = 0; i < res.size(); i++)
+                    resArray[i] = res.get(i);
+                return resArray;
+            } else if (Constants.RS_UNSUCCESSFUL_NAME_SEARCH.equals(response.get(Constants.F_RESPONSE))) {
+                return new String[0];
+            } else {
+                return new String[0];
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new String[0];
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return new String[0];
+        }
     }
 
     @Override
     public String[] searchHashtag(String hashtag) {
-        return new String[]{"message1", "message2"};
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_HASHTAG_SEARCH);
+            request.put(Constants.F_HASHTAG, hashtag);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_HASHTAG_SEARCH.equals(response.get(Constants.F_RESPONSE))) {
+                return new String[0];
+            } else if (Constants.RS_UNSUCCESSFUL_HASHTAG_SEARCH.equals(response.get(Constants.F_RESPONSE))) {
+                return new String[0];
+            } else {
+                System.err.println("Response type is not valid.");
+                return new String[0];
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return new String[0];
+        }
     }
 
     @Override
@@ -311,5 +382,57 @@ public class Client implements FirstPageFetcher, MainPageFetcher, ProfilePageFet
     @Override
     public void message(String name) {
 
+    }
+
+    @Override
+    public boolean addGroup(String name) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_ADD_TO_GROUP);
+            request.put(Constants.F_GROUP_MEMBER, currentUser);
+            request.put(Constants.F_GROUP_NAME, name);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                return true;
+            } else if (Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                return false;
+            } else
+                return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean addChannel(String name) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_JOIN_A_CHANNEL);
+            request.put(Constants.F_CHANNEL_MEMBER, currentUser);
+            request.put(Constants.F_CHANNEL_NAME, name);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_JOIN_A_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+                return true;
+            } else if (Constants.RS_UNSUCCESSFUL_JOIN_A_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+                return false;
+            } else
+                return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

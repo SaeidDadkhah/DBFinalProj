@@ -1,10 +1,10 @@
-package client.ui;
+package client.ui.main;
 
 /**
  * Created by Saeid Dadkhah on 2016-07-01 8:13 PM.
  * Project: DBFinalProject
  */
-public interface BaseFetchet {
+public interface BaseFetcher {
 
     void closing();
 

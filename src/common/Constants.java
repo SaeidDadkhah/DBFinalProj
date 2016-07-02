@@ -39,9 +39,18 @@ public class Constants {
     public static final String RQ_UPDATE_PROFILE = "update profile";
     public static final String RQ_HASHTAG = "hashtag";
     public static final String RQ_MENTION = "mention";
+    public static final String RQ_HASHTAG_SEARCH = "hashtag search";
+    public static final String RQ_NAME_SEARCH = "name search";
+    public static final String RQ_WTF = "what is this";
     // RS stands for Request
     public static final String RS_SUCCESSFUL_SIGNUP = "successful signup";
     public static final String RS_UNSUCCESSFUL_SIGNUP = "unsuccessful signup";
+
+    public static final String RS_SUCCESSFUL_HASHTAG_SEARCH = "successful hashtag search";
+    public static final String RS_UNSUCCESSFUL_HASHTAG_SEARCH = "unsuccessful hashtag search";
+
+    public static final String RS_SUCCESSFUL_NAME_SEARCH = "successful name search";
+    public static final String RS_UNSUCCESSFUL_NAME_SEARCH = "unsuccessful name search";
 
     public static final String RS_SUCCESSFUL_DELETE_ACCOUNT = "successful delete account";
     public static final String RS_UNSUCCESSFUL_DELETE_ACCOUNT = "unsuccessful delete account";
@@ -67,6 +76,9 @@ public class Constants {
     public static final String RS_SUCCESSFUL_MENTION = "successful mention";
     public static final String RS_UNSUCCESSFUL_MENTION = "unsuccessful mention";
 
+    public static final String RS_SUCCESSFUL_WTF = "successful what is this";
+    public static final String RS_UNSUCCESSFUL_WTF = "unsuccessful what is this";
+
     public static final String RS_GET_PROFILE = "get profile";
     public static final String RS_UPDATE_PROFILE = "update profile";
     //public static final String RS_UNSUCCESSFUL_GET_PROFILE = "unsuccessful get profile";
@@ -75,6 +87,7 @@ public class Constants {
     public static final String RS_UPDATE_GROUPS = "update groups response";
     public static final String RS_UPDATE_CHANNELS = "update channels response";
     public static final String RS_HASHTAG = "hashtag";
+    //public static final String RS_WTF = "what is that";
 
 
     // F stands for Field

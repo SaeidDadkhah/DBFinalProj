@@ -42,6 +42,16 @@ public class MainPage extends JFrame {
             }
 
             @Override
+            public void showNewGroupPage() {
+
+            }
+
+            @Override
+            public void showNewChannelPage() {
+
+            }
+
+            @Override
             public void logout() {
                 System.out.println("Log Out");
             }
@@ -136,10 +146,12 @@ public class MainPage extends JFrame {
 
         m_window.addSeparator();
 
-        JMenuItem mi_newGroup = new JMenuItem("Add New Group");
+        JMenuItem mi_newGroup = new JMenuItem("New Group");
+        mi_newGroup.addActionListener(e -> fetcher.showNewGroupPage());
         m_window.add(mi_newGroup);
 
-        JMenuItem mi_newChannel = new JMenuItem("Add New Channel");
+        JMenuItem mi_newChannel = new JMenuItem("New Channel");
+        mi_newChannel.addActionListener(e -> fetcher.showNewChannelPage());
         m_window.add(mi_newChannel);
 
         m_window.addSeparator();
