@@ -211,7 +211,7 @@ public class MainPage extends JFrame {
         gbc.weighty = 1;
         ta_messages = new JTextArea();
         ta_messages.setEditable(false);
-        getContentPane().add(ta_messages, gbc);
+        getContentPane().add(new JScrollPane(ta_messages), gbc);
 
         gbc.gridy = 2;
         gbc.gridwidth = 3;
