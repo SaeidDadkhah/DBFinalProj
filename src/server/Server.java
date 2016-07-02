@@ -20,10 +20,7 @@ import java.util.ArrayList;
 import org.json.XML;
 import org.json.simple.JSONArray;
 
-/**
- * Created by Saeid Dadkhah on 2016-06-20 6:11 AM. esme manam mineveshti inja dg!!!!!!
- * Project: Server
- */
+
 @SuppressWarnings("unchecked")
 public class Server implements Runnable {
 
@@ -88,6 +85,12 @@ public class Server implements Runnable {
                     case Constants.RQ_MESSAGING:
                         messaging();
                         break;
+                    case Constants.RQ_CHANNEL_MESSAGING:
+                        messaging();
+                        break;
+                    case Constants.RQ_GROUP_MESSAGING:
+                        messaging();
+                        break;
                     case Constants.RQ_NEW_CHANNEL:
                         newChanal();
                         break;
@@ -96,6 +99,9 @@ public class Server implements Runnable {
                         break;
                     case Constants.RQ_ADD_TO_GROUP:
                         addToGroup();
+                        break;
+                    case Constants.RQ_ADD_FRIENDS:
+                        addFriend();
                         break;
                     case Constants.RQ_JOIN_A_CHANNEL:
                         joinAChannel();
@@ -148,7 +154,13 @@ public class Server implements Runnable {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
                             .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
-            if (res.first() == null) {
+            FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
+                    .find(new Document()
+                            .append(Constants.F_GROUP_NAME, request.get(Constants.F_USERNAME)));
+            FindIterable<Document> res3 = db.getCollection(Constants.C_CHANNELS)
+                    .find(new Document()
+                            .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_USERNAME)));
+            if (res.first() == null && res2.first() == null && res3.first() == null) {
                 db.getCollection(Constants.C_USERS).insertOne(new Document()
                         .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME))
                         .append(Constants.F_PASSWORD, request.get(Constants.F_PASSWORD))
@@ -233,7 +245,7 @@ public class Server implements Runnable {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
-                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER)));
+                            .append(Constants.F_USERNAME, request.get(Constants.F_RECEIVER)));
             if (res.first() != null) {
                 db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
                         .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
@@ -260,17 +272,115 @@ public class Server implements Runnable {
         }
     }
 
+    public boolean channelMessaging() {
+
+        try {
+            FindIterable<Document> res = db.getCollection(Constants.C_CHANNELS)
+                    .find(new Document()
+                            .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_RECEIVER)));
+            if (res.first() != null) {
+                FindIterable<Document> res2 = db.getCollection(Constants.C_CHANNELS)
+                        .find(new Document()
+                                .append(Constants.F_ADMIN, request.get(Constants.F_SENDER)));
+                if (res2.first() != null) {
+                    db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
+                            .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                            .append(Constants.F_MID, db.getCollection(Constants.C_MESSAGES).count())
+                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
+                            .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
+                            .append(Constants.F_TIME, System.currentTimeMillis()));
+
+                    JSONObject response = new JSONObject();
+                    response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_CHANNEL_MESSAGING);
+                    System.out.println(response.toJSONString());
+                    dos.writeUTF(response.toJSONString());
+                    return true;
+                } else {
+                    JSONObject response = new JSONObject();
+                    response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_CHANNEL_MESSAGING);
+                    System.out.println(response.toJSONString());
+                    dos.writeUTF(response.toJSONString());
+                    return false;
+                }
+            } else {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_CHANNEL_MESSAGING);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean groupMessaging() {
+
+        try {
+            FindIterable<Document> res = db.getCollection(Constants.C_GROUPS)
+                    .find(new Document()
+                            .append(Constants.F_GROUP_NAME, request.get(Constants.F_RECEIVER)));
+            if (res.first() != null) {
+                FindIterable<Document> res2 = db.getCollection(Constants.C_USERS)
+                        .find(new Document()
+                                .append(Constants.F_USERNAME, request.get(Constants.F_SENDER)));
+                ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER);
+                members.contains(new Document()
+                        .append(Constants.F_GROUP_MEMBER, request.get(Constants.F_SENDER)));
+                if (res2.first() != null && members.contains(new Document()
+                        .append(Constants.F_GROUP_MEMBER, request.get(Constants.F_SENDER)))) {
+                    db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
+                            .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                            .append(Constants.F_MID, db.getCollection(Constants.C_MESSAGES).count())
+                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
+                            .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
+                            .append(Constants.F_TIME, System.currentTimeMillis()));
+
+                    JSONObject response = new JSONObject();
+                    response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_GROUP_MESSAGING);
+                    System.out.println(response.toJSONString());
+                    dos.writeUTF(response.toJSONString());
+                    return true;
+                } else {
+                    JSONObject response = new JSONObject();
+                    response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_GROUP_MESSAGING);
+                    System.out.println(response.toJSONString());
+                    dos.writeUTF(response.toJSONString());
+                    return false;
+                }
+            } else {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_GROUP_MESSAGING);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean newChanal() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
                             .append(Constants.F_ADMIN, request.get(Constants.F_USERNAME)));
 
+
             if (res.first() != null) {
-                FindIterable<Document> res2 = db.getCollection(Constants.C_CHANNELS)
+                FindIterable<Document> res4 = db.getCollection(Constants.C_CHANNELS)
                         .find(new Document()
                                 .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
-                if (res2.first() == null) {
+                FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
+                        .find(new Document()
+                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_USERNAME)));
+                FindIterable<Document> res3 = db.getCollection(Constants.C_USERS)
+                        .find(new Document()
+                                .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+
+                if (res2.first() == null && res3.first() == null && res4.first() == null) {
 
                     db.getCollection(Constants.C_CHANNELS).insertOne(new Document()
                             .append(Constants.F_ADMIN, request.get(Constants.F_ADMIN))
@@ -308,10 +418,17 @@ public class Server implements Runnable {
                     .find(new Document()
                             .append(Constants.F_USERNAME, request.get(Constants.F_ADMIN)));
             if (res.first() != null) {
+                FindIterable<Document> res4 = db.getCollection(Constants.C_CHANNELS)
+                        .find(new Document()
+                                .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
                 FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
                         .find(new Document()
-                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
-                if (res2.first() == null) {
+                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_USERNAME)));
+                FindIterable<Document> res3 = db.getCollection(Constants.C_USERS)
+                        .find(new Document()
+                                .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+
+                if (res2.first() == null && res3.first() == null && res4.first() == null) {
 
                     db.getCollection(Constants.C_GROUPS).insertOne(new Document()
                             .append(Constants.F_ADMIN, request.get(Constants.F_ADMIN))
@@ -349,12 +466,12 @@ public class Server implements Runnable {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
                             .append(Constants.F_USERNAME, request.get(Constants.F_GROUP_MEMBER)));
-            if (res.first() != null) {
-                FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
-                        .find(new Document()
-                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
-                if (res2.first() != null) {
-                    ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER);
+            FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
+                    .find(new Document()
+                            .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
+            if (res.first() != null && res2.first() != null) {
+                ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER);
+                if (!members.contains(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)))) {
                     members.add(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)));
                     db.getCollection(Constants.C_USERS)
                             .updateOne(new Document(Constants.F_USERNAME, request.get(Constants.F_GROUP_MEMBER)),
@@ -365,20 +482,13 @@ public class Server implements Runnable {
                     db.getCollection(Constants.C_GROUPS)
                             .updateOne(new Document(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)),
                                     new Document("$set", new Document(Constants.F_GROUP_MEMBER, members)));
-
-                    JSONObject response = new JSONObject();
-                    response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_ADD_TO_GROUP);
-                    System.out.println(response.toJSONString());
-                    dos.writeUTF(response.toJSONString());
-                    return true;
-                } else {
-                    JSONObject response = new JSONObject();
-                    response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP);
-                    System.out.println(response.toJSONString());
-                    dos.writeUTF(response.toJSONString());
-                    return false;
                 }
 
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_ADD_TO_GROUP);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
             } else {
                 JSONObject response = new JSONObject();
                 response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP);
@@ -394,28 +504,70 @@ public class Server implements Runnable {
 
     public boolean joinAChannel() {
         try {
-            FindIterable<Document> res = db.getCollection(Constants.C_CHANNELS)
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
+                    .find(new Document()
+                            .append(Constants.F_USERNAME, request.get(Constants.F_CHANNEL_MEMBER)));
+            FindIterable<Document> res2 = db.getCollection(Constants.C_CHANNELS)
                     .find(new Document()
                             .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
-            if (res.first() != null) {
-
+            if (res.first() != null && res2.first() != null) {
                 ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_CHANNEL_MEMBER);
-                members.add(new Document(Constants.F_CHANNEL_MEMBER, request.get(Constants.F_CHANNEL_MEMBER)));
+                if (!members.contains(new Document(Constants.F_CHANNEL_MEMBER, request.get(Constants.F_CHANNEL_NAME)))) {
+                    members.add(new Document(Constants.F_CHANNEL_MEMBER, request.get(Constants.F_CHANNEL_NAME)));
+                    db.getCollection(Constants.C_USERS)
+                            .updateOne(new Document(Constants.F_USERNAME, request.get(Constants.F_CHANNEL_MEMBER)),
+                                    new Document("$set", new Document(Constants.F_CHANNEL_MEMBER, members)));
 
-                db.getCollection(Constants.C_CHANNELS)
-                        .updateOne(new Document(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)),
-                                new Document("$set", new Document(Constants.F_CHANNEL_MEMBER, members)));
+                    members = (ArrayList<Document>) res2.first().get(Constants.F_CHANNEL_MEMBER);
+                    members.add(new Document(Constants.F_CHANNEL_MEMBER, request.get(Constants.F_CHANNEL_MEMBER)));
+                    db.getCollection(Constants.C_CHANNELS)
+                            .updateOne(new Document(Constants.F_CHANNEL_NAME, request.get(Constants.F_GROUP_NAME)),
+                                    new Document("$set", new Document(Constants.F_CHANNEL_MEMBER, members)));
+                }
 
                 JSONObject response = new JSONObject();
                 response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_JOIN_A_CHANNEL);
                 System.out.println(response.toJSONString());
                 dos.writeUTF(response.toJSONString());
                 return true;
-
-
             } else {
                 JSONObject response = new JSONObject();
                 response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_JOIN_A_CHANNEL);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean addFriend() {
+        try {
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
+                    .find(new Document()
+                            .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+            FindIterable<Document> res2 = db.getCollection(Constants.C_USERS)
+                    .find(new Document()
+                            .append(Constants.F_USERNAME, request.get(Constants.F_FRIEND)));
+            if (res.first() != null && res2.first() != null) {
+                ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_FRIENDS);
+                if (!members.contains(new Document(Constants.F_FRIEND, request.get(Constants.F_FRIEND)))) {
+                    members.add(new Document(Constants.F_FRIEND, request.get(Constants.F_FRIEND)));
+                    db.getCollection(Constants.C_USERS)
+                            .updateOne(new Document(Constants.F_USERNAME, request.get(Constants.F_USERNAME)),
+                                    new Document("$set", new Document(Constants.F_FRIENDS, members)));
+                }
+
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_ADD_FRIENDS);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
+            } else {
+                JSONObject response = new JSONObject();
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_ADD_FRIENDS);
                 System.out.println(response.toJSONString());
                 dos.writeUTF(response.toJSONString());
                 return false;
@@ -753,38 +905,41 @@ public class Server implements Runnable {
 
             JSONObject response = new JSONObject();
 
-            boolean flag = false;
             FindIterable<Document> res = db.getCollection(Constants.C_USERS).find(new Document()
                     .append(Constants.F_USERNAME, request.get(Constants.F_NAME)));
             FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS).find(new Document()
                     .append(Constants.F_GROUP_NAME, request.get(Constants.F_NAME)));
             FindIterable<Document> res3 = db.getCollection(Constants.C_CHANNELS).find(new Document()
                     .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_NAME)));
-            if (res.first() != null) {
-                flag = true;
-                response.put(Constants.F_USERNAME, request.get(Constants.F_NAME));
-            }
-            if (res2.first() != null) {
-                flag = true;
-                response.put(Constants.F_GROUP_NAME, request.get(Constants.F_NAME));
-            }
-            if (res3.first() != null) {
-                flag = true;
-                response.put(Constants.F_CHANNEL_NAME, request.get(Constants.F_NAME));
-            }
 
-            if (flag) {
+            if (res.first() != null) {
                 response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_WTF);
+                response.put(Constants.F_NAME, Constants.F_USERNAME);
 
                 System.out.println(response.toJSONString());
                 dos.writeUTF(response.toJSONString());
                 return true;
-            } else {
-                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_WTF);
+            }
+            if (res2.first() != null) {
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_WTF);
+                response.put(Constants.F_NAME, Constants.F_GROUP_NAME);
+
                 System.out.println(response.toJSONString());
                 dos.writeUTF(response.toJSONString());
-                return false;
+                return true;
             }
+            if (res3.first() != null) {
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_WTF);
+                response.put(Constants.F_NAME, Constants.F_CHANNEL_NAME);
+
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
+            }
+            response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_WTF);
+            System.out.println(response.toJSONString());
+            dos.writeUTF(response.toJSONString());
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;

@@ -27,10 +27,13 @@ public class Constants {
     public static final String RQ_SIGNUP = "signup";
     public static final String RQ_LOGIN = "login";
     public static final String RQ_UPDATE_FRIENDS = "update friends request";//
+    public static final String RQ_ADD_FRIENDS = "add friends request";
     public static final String RQ_UPDATE_GROUPS = "update groups request";//
     public static final String RQ_UPDATE_CHANNELS = "update channels request";//
     public static final String RQ_DELETE_ACCOUNT = "delete account";
     public static final String RQ_MESSAGING = "messaging";
+    public static final String RQ_CHANNEL_MESSAGING = "channel messaging";
+    public static final String RQ_GROUP_MESSAGING = "group messaging";
     public static final String RQ_NEW_CHANNEL = "new channel";
     public static final String RQ_NEW_GROUP = "new group";
     public static final String RQ_ADD_TO_GROUP = "add to group";
@@ -61,6 +64,12 @@ public class Constants {
     public static final String RS_SUCCESSFUL_MESSAGING = "successful messaging";
     public static final String RS_UNSUCCESSFUL_MESSAGING = "unsuccessful messaging";
 
+    public static final String RS_SUCCESSFUL_CHANNEL_MESSAGING = "successful channel messaging";
+    public static final String RS_UNSUCCESSFUL_CHANNEL_MESSAGING = "unsuccessful channel messaging";
+
+    public static final String RS_SUCCESSFUL_GROUP_MESSAGING = "successful group messaging";
+    public static final String RS_UNSUCCESSFUL_GROUP_MESSAGING = "unsuccessful group messaging";
+
     public static final String RS_SUCCESSFUL_NEW_CHANNEL = "successful new channel";
     public static final String RS_UNSUCCESSFUL_NEW_CHANNEL = "unsuccessful new channel";
 
@@ -75,6 +84,9 @@ public class Constants {
 
     public static final String RS_SUCCESSFUL_MENTION = "successful mention";
     public static final String RS_UNSUCCESSFUL_MENTION = "unsuccessful mention";
+
+    public static final String RS_SUCCESSFUL_ADD_FRIENDS = "successful add friends";
+    public static final String RS_UNSUCCESSFUL_ADD_FRIENDS = "unsuccessful add friends";
 
     public static final String RS_SUCCESSFUL_WTF = "successful what is this";
     public static final String RS_UNSUCCESSFUL_WTF = "unsuccessful what is this";
@@ -95,6 +107,7 @@ public class Constants {
     public static final String F_RESPONSE = "response";
     public static final String F_USERNAME = "username";
     public static final String F_FRIENDS = "friends";
+    public static final String F_FRIEND = "friend";
     public static final String F_SENDER = "sender";
     public static final String F_RECEIVER = "receiver";
     public static final String F_ADMIN = "admin";
@@ -114,5 +127,6 @@ public class Constants {
     public static final String F_HASHTAG = "hashtag";
     public static final String F_MENTIONED = "mentioned";
     public static final String F_MID = "count";
+
 
 }

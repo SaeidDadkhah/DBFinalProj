@@ -269,21 +269,59 @@ public class Client implements
     @Override
     public boolean send(String message) {
         try {
-            JSONObject request = new JSONObject();
-            request.put(Constants.F_REQUEST, Constants.RQ_MESSAGING);
-            request.put(Constants.F_SENDER, currentUser);
-            request.put(Constants.F_RECEIVER, currentContact);
-            request.put(Constants.F_MESSAGE, message);
-            System.out.println(request.toJSONString());
-            dos.writeUTF(request.toJSONString());
+            String type = wis(currentContact);
 
-            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
-            if (Constants.RS_SUCCESSFUL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
-                return true;
-            else if (Constants.RS_UNSUCCESSFUL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
-                return false;
-            else
-                return false;
+            JSONObject request = new JSONObject();
+            if (type != null)
+                switch (type) {
+                    case Constants.F_USERNAME:
+                        request.put(Constants.F_REQUEST, Constants.RQ_MESSAGING);
+                        request.put(Constants.F_SENDER, currentUser);
+                        request.put(Constants.F_RECEIVER, currentContact);
+                        request.put(Constants.F_MESSAGE, message);
+                        System.out.println(request.toJSONString());
+                        dos.writeUTF(request.toJSONString());
+
+                        JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+                        if (Constants.RS_SUCCESSFUL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                            return true;
+                        else if (Constants.RS_UNSUCCESSFUL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                            return false;
+                        else
+                            return false;
+                    case Constants.F_GROUP_NAME:
+                        request.put(Constants.F_REQUEST, Constants.RQ_GROUP_MESSAGING);
+                        request.put(Constants.F_SENDER, currentUser);
+                        request.put(Constants.F_RECEIVER, currentContact);
+                        request.put(Constants.F_MESSAGE, message);
+                        System.out.println(request.toJSONString());
+                        dos.writeUTF(request.toJSONString());
+
+                        response = (JSONObject) parser.parse(dis.readUTF());
+                        if (Constants.RS_SUCCESSFUL_GROUP_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                            return true;
+                        else if (Constants.RS_UNSUCCESSFUL_GROUP_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                            return false;
+                        else
+                            return false;
+                    case Constants.F_CHANNEL_NAME:
+                        request.put(Constants.F_REQUEST, Constants.RQ_CHANNEL_MESSAGING);
+                        request.put(Constants.F_SENDER, currentUser);
+                        request.put(Constants.F_RECEIVER, currentContact);
+                        request.put(Constants.F_MESSAGE, message);
+                        System.out.println(request.toJSONString());
+                        dos.writeUTF(request.toJSONString());
+
+                        response = (JSONObject) parser.parse(dis.readUTF());
+                        if (Constants.RS_SUCCESSFUL_CHANNEL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                            return true;
+                        else if (Constants.RS_UNSUCCESSFUL_CHANNEL_MESSAGING.equals(response.get(Constants.F_RESPONSE)))
+                            return false;
+                        else
+                            return false;
+                }
+            System.err.println("Type is not valid.");
+            return false;
         } catch (IOException | ParseException e) {
             e.printStackTrace();
             return false;
@@ -380,29 +418,53 @@ public class Client implements
     @Override
     public void add(String name) {
         try {
+            String type = wis(name);
             JSONObject request = new JSONObject();
-            request.put(Constants.F_REQUEST, Constants.RQ_WTF);
-            request.put(Constants.F_NAME, name);
-            System.out.println(request.toJSONString());
-            dos.writeUTF(request.toJSONString());
+            switch (type) {
+                case Constants.F_USERNAME:
+                    request.put(Constants.F_REQUEST, Constants.RQ_ADD_FRIENDS);
+                    request.put(Constants.F_USERNAME, currentUser);
+                    request.put(Constants.F_FRIEND, name);
+                    System.out.println(request.toJSONString());
+                    dos.writeUTF(request.toJSONString());
 
-            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
-            if (Constants.RS_SUCCESSFUL_WTF.equals(response.get(Constants.F_RESPONSE))) {
-                request.clear();
-                request.put(Constants.F_REQUEST, Constants.RQ_ADD_TO_GROUP);
-                request.put(Constants.F_GROUP_NAME, name);
-                request.put(Constants.F_GROUP_MEMBER, currentUser);
-                System.out.println(request.toJSONString());
-                dos.writeUTF(request.toJSONString());
+                    JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+                    if (Constants.RS_SUCCESSFUL_ADD_FRIENDS.equals(response.get(Constants.F_RESPONSE))) {
+                        updateContacts(Constants.RQ_UPDATE_FRIENDS);
+                    } else if (Constants.RS_UNSUCCESSFUL_ADD_FRIENDS.equals(response.get(Constants.F_RESPONSE))) {
+                    } else {
+                    }
+                    break;
+                case Constants.F_GROUP_NAME:
+                    request.put(Constants.F_REQUEST, Constants.RQ_ADD_TO_GROUP);
+                    request.put(Constants.F_GROUP_MEMBER, currentUser);
+                    request.put(Constants.F_GROUP_NAME, name);
+                    System.out.println(request.toJSONString());
+                    dos.writeUTF(request.toJSONString());
 
-                response = (JSONObject) parser.parse(dis.readUTF());
-                if (Constants.RS_SUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
-                    updateContacts(Constants.RQ_UPDATE_GROUPS);
-                } else if (Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
-                } else {
-                }
-            } else if (Constants.RS_UNSUCCESSFUL_WTF.equals(response.get(Constants.F_RESPONSE))) {
-            } else {
+                    response = (JSONObject) parser.parse(dis.readUTF());
+                    if (Constants.RS_SUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                        updateContacts(Constants.RQ_UPDATE_GROUPS);
+                    } else if (Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                    } else {
+                    }
+                    break;
+                case Constants.F_CHANNEL_NAME:
+                    request.put(Constants.F_REQUEST, Constants.RQ_JOIN_A_CHANNEL);
+                    request.put(Constants.F_CHANNEL_MEMBER, currentUser);
+                    request.put(Constants.F_CHANNEL_NAME, name);
+                    System.out.println(request.toJSONString());
+                    dos.writeUTF(request.toJSONString());
+
+                    response = (JSONObject) parser.parse(dis.readUTF());
+                    if (Constants.RS_SUCCESSFUL_JOIN_A_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+                        updateContacts(Constants.RQ_UPDATE_CHANNELS);
+                    } else if (Constants.RS_SUCCESSFUL_JOIN_A_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+                    } else {
+                    }
+                    break;
+                default:
+                    System.err.println("Response field is invalid.");
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
@@ -465,4 +527,26 @@ public class Client implements
             return false;
         }
     }
+
+    private String wis(String name) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_WTF);
+            request.put(Constants.F_NAME, name);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_WTF.equals(response.get(Constants.F_RESPONSE)))
+                return (String) response.get(Constants.F_NAME);
+            else if (Constants.RS_UNSUCCESSFUL_WTF.equals(response.get(Constants.F_RESPONSE)))
+                return null;
+            else
+                return null;
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
