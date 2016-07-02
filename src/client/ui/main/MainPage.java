@@ -280,10 +280,10 @@ public class MainPage extends JFrame {
             case Constants.F_FRIENDS:
                 node = (DefaultMutableTreeNode) node.getChildAt(0);
                 break;
-            case Constants.F_GROUP_NAME:
+            case Constants.F_GROUP_MEMBER:
                 node = (DefaultMutableTreeNode) node.getChildAt(1);
                 break;
-            case Constants.F_CHANNEL_NAME:
+            case Constants.F_CHANNEL_MEMBER:
                 node = (DefaultMutableTreeNode) node.getChildAt(2);
                 break;
             default:

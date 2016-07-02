@@ -24,13 +24,13 @@ public class BaseInput extends JDialog {
     public static void main(String[] args) {
         new BaseInput(new InputFetcher() {
             @Override
-            public boolean addGroup(String name) {
+            public boolean newGroup(String name) {
                 System.out.println("Add group: " + name);
                 return false;
             }
 
             @Override
-            public boolean addChannel(String name) {
+            public boolean newChannel(String name) {
                 System.out.println("Add channel: " + name);
                 return false;
             }
@@ -85,13 +85,13 @@ public class BaseInput extends JDialog {
         b_add.addActionListener(e -> {
             switch (type) {
                 case T_GROUP:
-                    if (fetcher.addGroup(tf_name.getText()))
+                    if (fetcher.newGroup(tf_name.getText()))
                         dispose();
                     else
                         JOptionPane.showMessageDialog(null, "Group name is already in use.", "Error", JOptionPane.ERROR_MESSAGE);
                     break;
                 case T_CHANNEL:
-                    if (fetcher.addChannel(tf_name.getText()))
+                    if (fetcher.newChannel(tf_name.getText()))
                         dispose();
                     else
                         JOptionPane.showMessageDialog(null, "Channel name is already in use.", "Error", JOptionPane.ERROR_MESSAGE);

@@ -151,7 +151,10 @@ public class Server implements Runnable {
             if (res.first() == null) {
                 db.getCollection(Constants.C_USERS).insertOne(new Document()
                         .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME))
-                        .append(Constants.F_PASSWORD, request.get(Constants.F_PASSWORD)));
+                        .append(Constants.F_PASSWORD, request.get(Constants.F_PASSWORD))
+                        .append(Constants.F_FRIENDS, new ArrayList<Document>())
+                        .append(Constants.F_GROUP_MEMBER, new ArrayList<Document>())
+                        .append(Constants.F_CHANNEL_MEMBER, new ArrayList<Document>()));
 
                 JSONObject response = new JSONObject();
                 response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_SIGNUP);
@@ -312,6 +315,7 @@ public class Server implements Runnable {
 
                     db.getCollection(Constants.C_GROUPS).insertOne(new Document()
                             .append(Constants.F_ADMIN, request.get(Constants.F_ADMIN))
+                            .append(Constants.F_GROUP_MEMBER, new ArrayList<Document>())
                             .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
 
                     JSONObject response = new JSONObject();
@@ -350,10 +354,14 @@ public class Server implements Runnable {
                         .find(new Document()
                                 .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
                 if (res2.first() != null) {
-
-                    ArrayList<Document> members = (ArrayList<Document>) res2.first().get(Constants.F_GROUP_MEMBER);
+                    ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER);
                     members.add(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)));
+                    db.getCollection(Constants.C_USERS)
+                            .updateOne(new Document(Constants.F_USERNAME, request.get(Constants.F_GROUP_MEMBER)),
+                                    new Document("$set", new Document(Constants.F_GROUP_MEMBER, members)));
 
+                    members = (ArrayList<Document>) res2.first().get(Constants.F_GROUP_MEMBER);
+                    members.add(new Document(Constants.F_GROUP_MEMBER, request.get(Constants.F_GROUP_MEMBER)));
                     db.getCollection(Constants.C_GROUPS)
                             .updateOne(new Document(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)),
                                     new Document("$set", new Document(Constants.F_GROUP_MEMBER, members)));
@@ -420,17 +428,21 @@ public class Server implements Runnable {
 
     public boolean updateChannels() {
         try {
-            FindIterable<Document> res = db.getCollection(Constants.C_CHANNELS)
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
-                            .append(Constants.F_CHANNEL_MEMBER, request.get(Constants.F_USERNAME)));
-
+                            .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
 
             JSONObject response = new JSONObject();
             response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_CHANNELS);
 
-            for (Document document : res)
-                response.put(Constants.F_CHANNEL_NAME, document.get(Constants.F_CHANNEL_NAME));
+            if (res.first().get(Constants.F_CHANNEL_MEMBER) != null) {
+                JSONArray arr = new JSONArray();
 
+                for (Document doc : (ArrayList<Document>) res.first().get(Constants.F_CHANNEL_MEMBER))
+                    arr.add(doc);
+
+                response.put(Constants.F_CHANNEL_MEMBER, arr);
+            }
 
             System.out.println(response.toJSONString());
             dos.writeUTF(response.toJSONString());
@@ -444,17 +456,22 @@ public class Server implements Runnable {
 
     public boolean updateGroups() {
         try {
-            FindIterable<Document> res = db.getCollection(Constants.C_GROUPS)
+            FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
-                            .append(Constants.F_GROUP_MEMBER, request.get(Constants.F_USERNAME)));
+                            .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
 
 
             JSONObject response = new JSONObject();
             response.put(Constants.F_RESPONSE, Constants.RS_UPDATE_GROUPS);
 
-            for (Document document : res)
-                response.put(Constants.F_GROUP_NAME, document.get(Constants.F_GROUP_NAME));
+            if (res.first().get(Constants.F_GROUP_MEMBER) != null) {
+                JSONArray arr = new JSONArray();
 
+                for (Document doc : (ArrayList<Document>) res.first().get(Constants.F_GROUP_MEMBER))
+                    arr.add(doc);
+
+                response.put(Constants.F_GROUP_MEMBER, arr);
+            }
 
             System.out.println(response.toJSONString());
             dos.writeUTF(response.toJSONString());

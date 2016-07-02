@@ -6,8 +6,8 @@ package client.ui.main.input;
  */
 public interface InputFetcher {
 
-    boolean addGroup(String name);
+    boolean newGroup(String name);
 
-    boolean addChannel(String name);
+    boolean newChannel(String name);
 
 }

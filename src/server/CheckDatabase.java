@@ -19,6 +19,7 @@ public class CheckDatabase {
         for (Document doc : res) {
             System.out.println(doc.toJson());
         }
+//        mdb.getCollection(Constants.C_GROUPS).deleteMany(new Document());
     }
 
 }

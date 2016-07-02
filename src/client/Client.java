@@ -148,11 +148,11 @@ public class Client implements
                     break;
                 case Constants.RQ_UPDATE_GROUPS:
                     responseType = Constants.RS_UPDATE_GROUPS;
-                    field = Constants.F_GROUP_NAME;
+                    field = Constants.F_GROUP_MEMBER;
                     break;
                 case Constants.RQ_UPDATE_CHANNELS:
                     responseType = Constants.RS_UPDATE_CHANNELS;
-                    field = Constants.F_CHANNEL_NAME;
+                    field = Constants.F_CHANNEL_MEMBER;
                     break;
                 default:
                     System.err.println("Type name is not correct");
@@ -164,7 +164,7 @@ public class Client implements
                     JSONArray array = (JSONArray) response.get(field);
                     names = new String[array.size()];
                     for (int i = 0; i < array.size(); i++) {
-                        names[i] = (String) ((JSONObject) array.get(i)).get(Constants.F_USERNAME);
+                        names[i] = (String) ((JSONObject) array.get(i)).get(field);
                         System.out.println(names[i]);
                     }
                 } else {
@@ -322,16 +322,19 @@ public class Client implements
                 ArrayList<String> res = new ArrayList();
 
                 JSONArray array = (JSONArray) response.get(Constants.F_USERNAME);
-                for (int i = 0; i < array.size(); i++)
-                    res.add((String) ((JSONObject) array.get(i)).get(Constants.F_USERNAME));
+                //noinspection Convert2streamapi
+                for (Object anArray1 : array)
+                    res.add((String) ((JSONObject) anArray1).get(Constants.F_USERNAME));
 
                 array = (JSONArray) response.get(Constants.F_GROUP_NAME);
+                //noinspection Convert2streamapi
                 for (Object anArray : array)
                     res.add((String) ((JSONObject) anArray).get(Constants.F_GROUP_NAME));
 
                 array = (JSONArray) response.get(Constants.F_CHANNEL_NAME);
-                for (int i = 0; i < array.size(); i++)
-                    res.add((String) ((JSONObject) array.get(i)).get(Constants.F_CHANNEL_NAME));
+                //noinspection Convert2streamapi
+                for (Object anArray : array)
+                    res.add((String) ((JSONObject) anArray).get(Constants.F_CHANNEL_NAME));
                 String[] resArray = new String[res.size()];
                 for (int i = 0; i < res.size(); i++)
                     resArray[i] = res.get(i);
@@ -376,28 +379,55 @@ public class Client implements
 
     @Override
     public void add(String name) {
-
-    }
-
-    @Override
-    public void message(String name) {
-
-    }
-
-    @Override
-    public boolean addGroup(String name) {
         try {
             JSONObject request = new JSONObject();
-            request.put(Constants.F_REQUEST, Constants.RQ_ADD_TO_GROUP);
-            request.put(Constants.F_GROUP_MEMBER, currentUser);
+            request.put(Constants.F_REQUEST, Constants.RQ_WTF);
+            request.put(Constants.F_NAME, name);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_WTF.equals(response.get(Constants.F_RESPONSE))) {
+                request.clear();
+                request.put(Constants.F_REQUEST, Constants.RQ_ADD_TO_GROUP);
+                request.put(Constants.F_GROUP_NAME, name);
+                request.put(Constants.F_GROUP_MEMBER, currentUser);
+                System.out.println(request.toJSONString());
+                dos.writeUTF(request.toJSONString());
+
+                response = (JSONObject) parser.parse(dis.readUTF());
+                if (Constants.RS_SUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                    updateContacts(Constants.RQ_UPDATE_GROUPS);
+                } else if (Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                } else {
+                }
+            } else if (Constants.RS_UNSUCCESSFUL_WTF.equals(response.get(Constants.F_RESPONSE))) {
+            } else {
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void message(String message) {
+    }
+
+    @Override
+    public boolean newGroup(String name) {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_NEW_GROUP);
+            request.put(Constants.F_ADMIN, currentUser);
             request.put(Constants.F_GROUP_NAME, name);
             System.out.println(request.toJSONString());
             dos.writeUTF(request.toJSONString());
 
             JSONObject response = (JSONObject) parser.parse(dis.readUTF());
-            if (Constants.RS_SUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+            if (Constants.RS_SUCCESSFUL_NEW_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+                add(name);
                 return true;
-            } else if (Constants.RS_UNSUCCESSFUL_ADD_TO_GROUP.equals(response.get(Constants.F_RESPONSE))) {
+            } else if (Constants.RS_UNSUCCESSFUL_NEW_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
                 return false;
             } else
                 return false;
@@ -411,7 +441,7 @@ public class Client implements
     }
 
     @Override
-    public boolean addChannel(String name) {
+    public boolean newChannel(String name) {
         try {
             JSONObject request = new JSONObject();
             request.put(Constants.F_REQUEST, Constants.RQ_JOIN_A_CHANNEL);
