@@ -506,16 +506,17 @@ public class Client implements
     public boolean newChannel(String name) {
         try {
             JSONObject request = new JSONObject();
-            request.put(Constants.F_REQUEST, Constants.RQ_JOIN_A_CHANNEL);
-            request.put(Constants.F_CHANNEL_MEMBER, currentUser);
+            request.put(Constants.F_REQUEST, Constants.RQ_NEW_CHANNEL);
+            request.put(Constants.F_ADMIN, currentUser);
             request.put(Constants.F_CHANNEL_NAME, name);
             System.out.println(request.toJSONString());
             dos.writeUTF(request.toJSONString());
 
             JSONObject response = (JSONObject) parser.parse(dis.readUTF());
-            if (Constants.RS_SUCCESSFUL_JOIN_A_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+            if (Constants.RS_SUCCESSFUL_NEW_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+                add(name);
                 return true;
-            } else if (Constants.RS_UNSUCCESSFUL_JOIN_A_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
+            } else if (Constants.RS_UNSUCCESSFUL_NEW_CHANNEL.equals(response.get(Constants.F_RESPONSE))) {
                 return false;
             } else
                 return false;

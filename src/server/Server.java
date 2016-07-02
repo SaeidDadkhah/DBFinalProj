@@ -92,7 +92,7 @@ public class Server implements Runnable {
                         messaging();
                         break;
                     case Constants.RQ_NEW_CHANNEL:
-                        newChanal();
+                        newChannel();
                         break;
                     case Constants.RQ_NEW_GROUP:
                         newGroup();
@@ -316,7 +316,6 @@ public class Server implements Runnable {
     }
 
     public boolean groupMessaging() {
-
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_GROUPS)
                     .find(new Document()
@@ -362,11 +361,11 @@ public class Server implements Runnable {
         }
     }
 
-    public boolean newChanal() {
+    public boolean newChannel() {
         try {
             FindIterable<Document> res = db.getCollection(Constants.C_USERS)
                     .find(new Document()
-                            .append(Constants.F_ADMIN, request.get(Constants.F_USERNAME)));
+                            .append(Constants.F_USERNAME, request.get(Constants.F_ADMIN)));
 
 
             if (res.first() != null) {
@@ -375,16 +374,17 @@ public class Server implements Runnable {
                                 .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
                 FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
                         .find(new Document()
-                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_USERNAME)));
+                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_CHANNEL_NAME)));
                 FindIterable<Document> res3 = db.getCollection(Constants.C_USERS)
                         .find(new Document()
-                                .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+                                .append(Constants.F_USERNAME, request.get(Constants.F_CHANNEL_NAME)));
 
                 if (res2.first() == null && res3.first() == null && res4.first() == null) {
 
                     db.getCollection(Constants.C_CHANNELS).insertOne(new Document()
+                            .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME))
                             .append(Constants.F_ADMIN, request.get(Constants.F_ADMIN))
-                            .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
+                            .append(Constants.F_CHANNEL_MEMBER, new ArrayList<Document>()));
 
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_NEW_CHANNEL);
@@ -420,20 +420,20 @@ public class Server implements Runnable {
             if (res.first() != null) {
                 FindIterable<Document> res4 = db.getCollection(Constants.C_CHANNELS)
                         .find(new Document()
-                                .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_CHANNEL_NAME)));
+                                .append(Constants.F_CHANNEL_NAME, request.get(Constants.F_GROUP_NAME)));
                 FindIterable<Document> res2 = db.getCollection(Constants.C_GROUPS)
                         .find(new Document()
-                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_USERNAME)));
+                                .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
                 FindIterable<Document> res3 = db.getCollection(Constants.C_USERS)
                         .find(new Document()
-                                .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
+                                .append(Constants.F_USERNAME, request.get(Constants.F_GROUP_NAME)));
 
                 if (res2.first() == null && res3.first() == null && res4.first() == null) {
 
                     db.getCollection(Constants.C_GROUPS).insertOne(new Document()
+                            .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME))
                             .append(Constants.F_ADMIN, request.get(Constants.F_ADMIN))
-                            .append(Constants.F_GROUP_MEMBER, new ArrayList<Document>())
-                            .append(Constants.F_GROUP_NAME, request.get(Constants.F_GROUP_NAME)));
+                            .append(Constants.F_GROUP_MEMBER, new ArrayList<Document>()));
 
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_NEW_GROUP);

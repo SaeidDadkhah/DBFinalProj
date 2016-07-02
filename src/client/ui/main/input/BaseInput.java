@@ -4,6 +4,8 @@ import client.ui.component.PlaceHolder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * Created by Saeid Dadkhah on 2016-07-01 8:32 PM.
@@ -18,6 +20,7 @@ public class BaseInput extends JDialog {
     private InputFetcher fetcher;
 
     private JTextField tf_name;
+    private JButton b_add;
 
     private int type;
 
@@ -77,11 +80,19 @@ public class BaseInput extends JDialog {
         gbc.gridx = 2;
         gbc.weightx = 0.8;
         tf_name = new JTextField();
+        tf_name.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                if (e.getKeyChar() == '\n')
+                    b_add.doClick();
+            }
+        });
         getContentPane().add(tf_name, gbc);
 
         gbc.gridx = 3;
         gbc.weightx = 0;
-        JButton b_add = new JButton("Add");
+        b_add = new JButton("Add");
         b_add.addActionListener(e -> {
             switch (type) {
                 case T_GROUP:
@@ -103,6 +114,7 @@ public class BaseInput extends JDialog {
         getContentPane().add(b_add, gbc);
 
         setVisible(true);
+        tf_name.requestFocus();
     }
 
     private String getString() {
