@@ -45,9 +45,13 @@ public class Constants {
     public static final String RQ_HASHTAG_SEARCH = "hashtag search";
     public static final String RQ_NAME_SEARCH = "name search";
     public static final String RQ_WTF = "what is this";
+    public static final String RQ_SHOW_MESSAGES = "show messages";
     // RS stands for Request
     public static final String RS_SUCCESSFUL_SIGNUP = "successful signup";
     public static final String RS_UNSUCCESSFUL_SIGNUP = "unsuccessful signup";
+
+    public static final String RS_SUCCESSFUL_SHOW_MESSAGES = "successful show messages";
+    public static final String RS_UNSUCCESSFUL_SHOW_MESSAGES = "unsuccessful show messages";
 
     public static final String RS_SUCCESSFUL_HASHTAG_SEARCH = "successful hashtag search";
     public static final String RS_UNSUCCESSFUL_HASHTAG_SEARCH = "unsuccessful hashtag search";

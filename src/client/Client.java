@@ -10,6 +10,7 @@ import client.ui.main.profile.ProfilePageFetcher;
 import client.ui.main.search.SearchPage;
 import client.ui.main.search.SearchPageFetcher;
 import common.Constants;
+import org.bson.Document;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -329,6 +330,32 @@ public class Client implements
     }
 
     @Override
+    public void refresh() {
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_SHOW_MESSAGES);
+            request.put(Constants.F_SENDER, currentUser);
+            request.put(Constants.F_RECEIVER, currentContact);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (Constants.RS_SUCCESSFUL_SHOW_MESSAGES.equals(response.get(Constants.F_RESPONSE))) {
+                ArrayList<String> messages = new ArrayList<>();
+                ArrayList<String> senders = new ArrayList<>();
+                JSONArray jsonArray = ((JSONArray) response.get(Constants.F_MESSAGE));
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    messages.add((String) ((JSONObject) jsonArray.get(i)).get(Constants.F_MESSAGE));
+                    senders.add((String) ((JSONObject) jsonArray.get(i)).get(Constants.F_SENDER));
+                }
+                mainPage.setMessages(messages, senders);
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public boolean setCurrentContact(String currentContact) {
         this.currentContact = currentContact;
         return currentContact != null;
@@ -336,15 +363,25 @@ public class Client implements
 
     @Override
     public void setInformation(String name, String birthday, String email, String biography, String phone, String password) {
-        JSONObject request = new JSONObject();
-        request.put(Constants.F_REQUEST, Constants.RQ_UPDATE_PROFILE);
-        request.put(Constants.F_NAME, name);
-        request.put(Constants.F_BIRTHDAY, birthday);
-        request.put(Constants.F_EMAIL, email);
-        request.put(Constants.F_BIOGRAPHY, biography);
-        request.put(Constants.F_BIRTHDAY, birthday);
-        request.put(Constants.F_PHONE_NUMBER, phone);
-        request.put(Constants.F_PASSWORD, password);
+        try {
+            JSONObject request = new JSONObject();
+            request.put(Constants.F_REQUEST, Constants.RQ_UPDATE_PROFILE);
+            request.put(Constants.F_NAME, name);
+            request.put(Constants.F_BIRTHDAY, birthday);
+            request.put(Constants.F_EMAIL, email);
+            request.put(Constants.F_BIOGRAPHY, biography);
+            request.put(Constants.F_BIRTHDAY, birthday);
+            request.put(Constants.F_PHONE_NUMBER, phone);
+            request.put(Constants.F_PASSWORD, password);
+            System.out.println(request.toJSONString());
+            dos.writeUTF(request.toJSONString());
+
+            JSONObject response = (JSONObject) parser.parse(dis.readUTF());
+            if (!Constants.RS_UPDATE_PROFILE.equals(response.get(Constants.F_RESPONSE)))
+                System.err.println("Response type is not valid.");
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -424,7 +461,7 @@ public class Client implements
                 case Constants.F_USERNAME:
                     request.put(Constants.F_REQUEST, Constants.RQ_ADD_FRIENDS);
                     request.put(Constants.F_USERNAME, currentUser);
-                    request.put(Constants.F_FRIEND, name);
+                    request.put(Constants.F_FRIENDS, name);
                     System.out.println(request.toJSONString());
                     dos.writeUTF(request.toJSONString());
 

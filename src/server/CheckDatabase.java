@@ -26,15 +26,15 @@ public class CheckDatabase {
             System.out.println(doc.toJson());
         }
 
-        res = mdb.getCollection(Constants.C_CHANNELS).find();
+        res = mdb.getCollection(Constants.C_MESSAGES).find();
         System.out.println("Printing channels:");
         for (Document doc : res) {
             System.out.println(doc.toJson());
         }
 
-        mdb.getCollection(Constants.C_USERS).deleteMany(new Document());
-        mdb.getCollection(Constants.C_GROUPS).deleteMany(new Document());
-        mdb.getCollection(Constants.C_CHANNELS).deleteMany(new Document());
+//        mdb.getCollection(Constants.C_USERS).deleteMany(new Document());
+//        mdb.getCollection(Constants.C_GROUPS).deleteMany(new Document());
+//        mdb.getCollection(Constants.C_CHANNELS).deleteMany(new Document());
     }
 
 }

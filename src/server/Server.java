@@ -1,5 +1,6 @@
 package server;
 
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.json.XML;
 import org.json.simple.JSONArray;
@@ -86,10 +88,10 @@ public class Server implements Runnable {
                         messaging();
                         break;
                     case Constants.RQ_CHANNEL_MESSAGING:
-                        messaging();
+                        channelMessaging();
                         break;
                     case Constants.RQ_GROUP_MESSAGING:
-                        messaging();
+                        groupMessaging();
                         break;
                     case Constants.RQ_NEW_CHANNEL:
                         newChannel();
@@ -135,6 +137,9 @@ public class Server implements Runnable {
                         break;
                     case Constants.RQ_WTF:
                         wis();
+                        break;
+                    case Constants.RQ_SHOW_MESSAGES:
+                        showMessages();
                         break;
                     case Constants.RQ_DISCONNECT:
                         socket.close();
@@ -249,7 +254,6 @@ public class Server implements Runnable {
             if (res.first() != null) {
                 db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
                         .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
-                        .append(Constants.F_MID, db.getCollection(Constants.C_MESSAGES).count())
                         .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
                         .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
                         .append(Constants.F_TIME, System.currentTimeMillis()));
@@ -283,12 +287,35 @@ public class Server implements Runnable {
                         .find(new Document()
                                 .append(Constants.F_ADMIN, request.get(Constants.F_SENDER)));
                 if (res2.first() != null) {
-                    db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
+                    FindIterable<Document> res3 = db.getCollection(Constants.C_MESSAGES).find(new Document()
                             .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
-                            .append(Constants.F_MID, db.getCollection(Constants.C_MESSAGES).count())
-                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
-                            .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
-                            .append(Constants.F_TIME, System.currentTimeMillis()));
+                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER)));
+
+                    if (res3 != null) {
+
+                        ArrayList<Document> m = (ArrayList<Document>) res.first().get(Constants.F_MESSAGE);
+                        m.add(new Document()
+                                .append(Constants.F_MID, m.size())
+                                .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
+                                .append(Constants.F_TIME, System.currentTimeMillis()));
+
+                        db.getCollection(Constants.C_MESSAGES)
+                                .updateOne(new Document().append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                                                .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER)),
+                                        new Document("$set", new Document(Constants.F_MESSAGE, m)));
+
+                    } else {
+                        ArrayList<Document> m = new ArrayList<>();
+                        m.add(new Document()
+                                .append(Constants.F_MID, m.size())
+                                .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
+                                .append(Constants.F_TIME, System.currentTimeMillis()));
+
+                        db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
+                                .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                                .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
+                                .append(Constants.F_MESSAGE, m));
+                    }
 
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_CHANNEL_MESSAGING);
@@ -329,13 +356,36 @@ public class Server implements Runnable {
                         .append(Constants.F_GROUP_MEMBER, request.get(Constants.F_SENDER)));
                 if (res2.first() != null && members.contains(new Document()
                         .append(Constants.F_GROUP_MEMBER, request.get(Constants.F_SENDER)))) {
-                    db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
-                            .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
-                            .append(Constants.F_MID, db.getCollection(Constants.C_MESSAGES).count())
-                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
-                            .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
-                            .append(Constants.F_TIME, System.currentTimeMillis()));
 
+                    FindIterable<Document> res3 = db.getCollection(Constants.C_MESSAGES).find(new Document()
+                            .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                            .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER)));
+
+                    if (res3 != null) {
+
+                        ArrayList<Document> m = (ArrayList<Document>) res.first().get(Constants.F_MESSAGE);
+                        m.add(new Document()
+                                .append(Constants.F_MID, m.size())
+                                .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
+                                .append(Constants.F_TIME, System.currentTimeMillis()));
+
+                        db.getCollection(Constants.C_MESSAGES)
+                                .updateOne(new Document().append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                                                .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER)),
+                                        new Document("$set", new Document(Constants.F_MESSAGE, m)));
+
+                    } else {
+                        ArrayList<Document> m = new ArrayList<>();
+                        m.add(new Document()
+                                .append(Constants.F_MID, m.size())
+                                .append(Constants.F_MESSAGE, request.get(Constants.F_MESSAGE))
+                                .append(Constants.F_TIME, System.currentTimeMillis()));
+
+                        db.getCollection(Constants.C_MESSAGES).insertOne(new Document()
+                                .append(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                                .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER))
+                                .append(Constants.F_MESSAGE, m));
+                    }
                     JSONObject response = new JSONObject();
                     response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_GROUP_MESSAGING);
                     System.out.println(response.toJSONString());
@@ -550,11 +600,11 @@ public class Server implements Runnable {
                             .append(Constants.F_USERNAME, request.get(Constants.F_USERNAME)));
             FindIterable<Document> res2 = db.getCollection(Constants.C_USERS)
                     .find(new Document()
-                            .append(Constants.F_USERNAME, request.get(Constants.F_FRIEND)));
+                            .append(Constants.F_USERNAME, request.get(Constants.F_FRIENDS)));
             if (res.first() != null && res2.first() != null) {
                 ArrayList<Document> members = (ArrayList<Document>) res.first().get(Constants.F_FRIENDS);
-                if (!members.contains(new Document(Constants.F_FRIEND, request.get(Constants.F_FRIEND)))) {
-                    members.add(new Document(Constants.F_FRIEND, request.get(Constants.F_FRIEND)));
+                if (!members.contains(new Document(Constants.F_FRIENDS, request.get(Constants.F_FRIENDS)))) {
+                    members.add(new Document(Constants.F_FRIENDS, request.get(Constants.F_FRIENDS)));
                     db.getCollection(Constants.C_USERS)
                             .updateOne(new Document(Constants.F_USERNAME, request.get(Constants.F_USERNAME)),
                                     new Document("$set", new Document(Constants.F_FRIENDS, members)));
@@ -940,6 +990,43 @@ public class Server implements Runnable {
             System.out.println(response.toJSONString());
             dos.writeUTF(response.toJSONString());
             return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean showMessages() {
+        try {
+            JSONObject response = new JSONObject();
+
+            FindIterable<Document> res = db.getCollection(Constants.C_MESSAGES)
+                    .find(new Document("$or", Arrays.asList(
+                            new Document(Constants.F_SENDER, request.get(Constants.F_SENDER))
+                                    .append(Constants.F_SENDER, request.get(Constants.F_RECEIVER)),
+                            new Document(Constants.F_RECEIVER, request.get(Constants.F_SENDER))
+                                    .append(Constants.F_RECEIVER, request.get(Constants.F_RECEIVER)))))
+                    .sort(new Document(Constants.F_TIME, 1));
+            if (res.first() != null) {
+                response.put(Constants.F_RESPONSE, Constants.RS_SUCCESSFUL_SHOW_MESSAGES);
+                response.put(Constants.F_MID, res.first().get(Constants.F_MID));
+
+                JSONArray jsonArray = new JSONArray();
+                for (Document doc : res) {
+                    jsonArray.add(new Document()
+                            .append(Constants.F_MESSAGE, doc.get(Constants.F_MESSAGE))
+                            .append(Constants.F_SENDER, doc.get(Constants.F_SENDER)));
+                }
+                response.put(Constants.F_MESSAGE, jsonArray);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return true;
+            } else {
+                response.put(Constants.F_RESPONSE, Constants.RS_UNSUCCESSFUL_SHOW_MESSAGES);
+                System.out.println(response.toJSONString());
+                dos.writeUTF(response.toJSONString());
+                return false;
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return false;

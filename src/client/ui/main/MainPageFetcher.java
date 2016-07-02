@@ -20,6 +20,8 @@ public interface MainPageFetcher extends BaseFetcher {
 
     boolean send(String message);
 
+    void refresh();
+
     boolean setCurrentContact(String contact);
 
 }

@@ -13,6 +13,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 /**
  * Created by Saeid Dadkhah on 2016-06-20 6:14 AM.
@@ -62,6 +63,11 @@ public class MainPage extends JFrame {
             public boolean send(String message) {
                 System.out.println("\nmessage: " + message);
                 return true;
+            }
+
+            @Override
+            public void refresh() {
+
             }
 
             @Override
@@ -234,10 +240,9 @@ public class MainPage extends JFrame {
             if (tf_message.getText().length() > 0
                     && node != null) {
                 if (fetcher.send(tf_message.getText())) {
-                    ta_messages.append("me: " + tf_message.getText() + "\n");
+                    fetcher.refresh();
                     tf_message.setText("");
                 }
-
             }
         });
         getContentPane().add(b_send, gbc);
@@ -253,6 +258,7 @@ public class MainPage extends JFrame {
         gbc.gridx = 3;
         gbc.ipadx = 0;
         b_refresh = new JButton("Refresh");
+        b_refresh.addActionListener(e -> fetcher.refresh());
         getContentPane().add(b_refresh, gbc);
 
         gbc.gridx = 4;
@@ -314,6 +320,16 @@ public class MainPage extends JFrame {
             tf_message.setEditable(true);
             fetcher.setCurrentContact((String) node.getUserObject());
         }
+    }
+
+    public void setMessages(ArrayList<String> messages, ArrayList<String> senders) {
+        ta_messages.setText("");
+        for (int i = 0; i < messages.size(); i++)
+            addMessage(messages.get(i), senders.get(i));
+    }
+
+    public void addMessage(String message, String sender) {
+        ta_messages.append(sender + ": " + message + "\n");
     }
 
 }
